@@ -1,0 +1,45 @@
+﻿@using PonteAlta.Models;
+@model List<Cliente>
+
+<table id="tblClientes" class="table table-striped table-hover table-condensed" width="100%" height="200px">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Apelido</th>
+            <th>Insc. Est.</th>
+            <th>CPF</th>
+            <th>Grp. Empresa</th>
+            <th>Situação</th>
+        </tr>
+    </thead>
+    @*<tbody>
+        @if (Model.Count > 0)
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <button type="button" class="btn btn-default btn-flat" onclick="Sistema.Pedido.SelecionarCliente(@item.Codigo)">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </td>
+                    <td>@item.Codigo</td>
+                    <td nowrap>@item.Nome</td>
+                    <td nowrap>@item.Apelido</td>
+                    <td nowrap>@item.InscricaoEstadual</td>
+                    <td nowrap>@item.CPF</td>
+                    <td>@item.CodGrupo</td>
+                    <td>@item.Situacao</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="8">Nenhum registro</td>
+            </tr>
+        }
+    </tbody>*@
+</table>

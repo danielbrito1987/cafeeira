@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="c9e49180-9d62-458e-95d6-273b85c19bee" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?wsdl" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda.xsd" MetadataType="Schema" ID="4f5a7e1a-40e7-4e39-aef1-85284a09820a" SourceId="1" SourceUrl="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?xsd=1" />
+    <MetadataFile FileName="g5-senior-services.wsdl" MetadataType="Wsdl" ID="16cd6563-77d0-4ec7-b6d5-f87282102498" SourceId="1" SourceUrl="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?wsdl" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

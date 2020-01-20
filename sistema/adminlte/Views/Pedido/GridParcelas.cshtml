@@ -1,0 +1,19 @@
+﻿@using PonteAlta.Persistencia.Models;
+@model List<Parcela>
+
+<table class="table table-striped table-hover table-condensed" width="100%" id="tblParcelas">
+    <thead>
+        <tr>
+            <th>
+                <button type="button" id="btnAddParcela" name="btnAddParcela" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-add-parcela')">
+                    <i class="fa fa-plus"></i>
+                </button>
+            </th>
+            <th>Código</th>
+            <th>Sequência</th>
+            <th>Vencimento</th>
+            <th>% Parcela</th>
+            <th>Vlr. Parcela</th>
+        </tr>
+    </thead>
+</table>

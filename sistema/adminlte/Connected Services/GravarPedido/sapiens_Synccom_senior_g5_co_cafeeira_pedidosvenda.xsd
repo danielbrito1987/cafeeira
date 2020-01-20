@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://services.senior.com.br" targetNamespace="http://services.senior.com.br" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="pedidosvendaGravarPedidoIn">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="flowInstanceID" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="flowName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="pedido" nillable="true" type="tns:pedidosvendaGravarPedidoInPedido" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoInPedido">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="avalistas" nillable="true" type="tns:pedidosvendaGravarPedidoInPedidoAvalistas" />
+      <xs:element minOccurs="0" name="cifFob" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codCli" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codCon" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codCpg" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFpg" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codGre" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codRep" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codTra" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codUsu" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="datEmi" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="fecPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="horEmi" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="numPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="opeExe" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="parcelas" nillable="true" type="tns:pedidosvendaGravarPedidoInPedidoParcelas" />
+      <xs:element minOccurs="0" name="plaVei" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="produto" nillable="true" type="tns:pedidosvendaGravarPedidoInPedidoProduto" />
+      <xs:element minOccurs="0" name="sitPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="temPar" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="tnsPro" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_AcrFin" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_ObsEnt" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_ObsPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_TxaJur" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrDar" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrFre" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrLiq" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoInPedidoAvalistas">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codAva" nillable="true" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoInPedidoParcelas">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="opeExe" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="perPar" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="seqPar" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vctPar" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrPar" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoInPedidoProduto">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codDep" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codDer" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codPro" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codTpr" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="datEnt" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="opeExe" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="perAcr" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="perDsc" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="preUni" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="qtdPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="seqIpd" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_DatDsc" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_HorDsc" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_PreBas" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="USU_UsuDsc" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrAcr" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrDsc" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrFre" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="vlrLiq" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoOut">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="erroExecucao" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="mensagemRetorno" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="respostaPedido" nillable="true" type="tns:pedidosvendaGravarPedidoOutRespostaPedido" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoOutRespostaPedido">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="gridObs" nillable="true" type="tns:pedidosvendaGravarPedidoOutRespostaPedidoGridObs" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="gridPar" nillable="true" type="tns:pedidosvendaGravarPedidoOutRespostaPedidoGridPar" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="gridPro" nillable="true" type="tns:pedidosvendaGravarPedidoOutRespostaPedidoGridPro" />
+      <xs:element minOccurs="0" name="msgRet" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="numPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="pedBlo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="retorno" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="sitPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="tipPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="tipRet" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoOutRespostaPedidoGridObs">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="numPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="retorno" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoOutRespostaPedidoGridPar">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="numPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="retorno" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaGravarPedidoOutRespostaPedidoGridPro">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="numPed" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="retorno" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="seqIpd" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="sitIpd" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaTrocarFilialIn">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="codUsu" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="flowInstanceID" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="flowName" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaTrocarFilialOut">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="erroExecucao" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaRelatoriosIn">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="codEmp" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="codFil" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="codMdr" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="flowInstanceID" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="flowName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="numPed" nillable="true" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pedidosvendaRelatoriosOut">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="erroExecucao" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="logProcesso" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="retornoBase64" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

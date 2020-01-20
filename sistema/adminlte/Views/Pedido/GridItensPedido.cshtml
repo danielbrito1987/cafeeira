@@ -1,0 +1,29 @@
+﻿@using PonteAlta.Persistencia.Models;
+@model List<PedidoItem>
+
+<table class="table table-striped table-hover table-condensed" width="100%" id="tblItens">
+    <thead>
+        <tr>
+            <th>
+                <button type="button" name="btnAddItem" id="btnAddItem" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-add-item')">
+                    <i class="fa fa-plus"></i>
+                </button>
+            </th>
+            <th>Código</th>
+            <th>Produto</th>
+            <th>Deriv.</th>
+            <th>Dep.</th>
+            <th>Entrega</th>
+            <th nowrap>Tab. Preço</th>
+            <th nowrap>Preço Base</th>
+            <th nowrap>Preço Venda</th>
+            <th>Qtde.</th>
+            <th>Frete</th>
+            <th nowrap>% Desc.</th>
+            <th nowrap>Vlr. Desc.</th>
+            <th nowrap>% Acre.</th>
+            <th nowrap>Vlr. Acre.</th>
+            <th nowrap>Vlr. Liq.</th>
+        </tr>
+    </thead>
+</table>

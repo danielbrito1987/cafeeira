@@ -1,0 +1,952 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Novo Pedido";
+}
+@using PonteAlta.Models;
+@using PonteAlta.Persistencia.Models;
+
+<style>
+    [type="date"]::-webkit-inner-spin-button {
+        display: none;
+    }
+
+    [type="date"]::-webkit-calendar-picker-indicator {
+        display: none;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="content-wrapper">
+    @*<section class="content-header">
+        <h1>
+            Novo Pedido
+            <small>&nbsp;</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
+            <li class="active">Novo Pedido</li>
+        </ol>
+    </section>*@
+
+    <section class="content">
+        <input class="form-control input-sm" id="condicao_pagamento_aux" name="condicao_pagamento_aux" type="hidden" value="">
+        <input class="form-control input-sm" id="condicao_pagamento_tipo_calculo" name="condicao_pagamento_tipo_calculo" type="hidden" value="" />
+        <input class="form-control input-sm" id="condicao_pagamento_Especial" name="condicao_pagamento_Especial" type="hidden" value="" />
+        <input class="form-control input-sm" id="condicao_pagamento_total_parcelas" name="condicao_pagamento_total_parcelas" type="hidden" value="" />
+        <input class="form-control input-sm" id="condicao_pagamento_manutencao_parcela" name="condicao_pagamento_manutencao_parcela" type="hidden" value="" />
+        <input class="form-control input-sm" id="condicao_pagamento_taxa_juros" name="condicao_pagamento_taxa_juros" type="hidden" value="" />
+        <input class="form-control input-sm" id="condicao_pagamento_ini_jur" name="condicao_pagamento_ini_jur" type="hidden" value="" />
+        <input class="form-control input-sm" id="autorizaDesconto" name="autorizaDesconto" type="hidden" value="@Session["venPds"]" />
+        <input type="hidden" class="form-control input-sm " id="grupo01_dt_hoje" name="grupo01_dt_hoje" value="@DateTime.Today.ToShortDateString()">
+        <input class="form-control input-sm" id="usuarioDesconto" name="usuarioDesconto" type="hidden" value="" />
+        <input type="hidden" class="form-control input-sm input-sm font_menor valorDecimal" id="text_valor_total_liquido" name="text_valor_total_liquido" value="">
+        <input type="hidden" class="form-control input-sm input-sm font_menor valorDecimal" id="text_valor_total_liquido_sem_juros" name="text_valor_total_liquido_sem_juros" value="">
+        <input class="form-control input-sm" id="sessao_usuario_logado" name="sessao_usuario_logado" type="hidden" value="@Session["codUsu"]" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box-body">
+                    <div class="nav-tabs-custom">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#tab_1" data-toggle="tab">Dados Gerais</a></li>
+                            <li><a href="#tab_2" data-toggle="tab">Avalistas</a></li>
+                            <li><a href="#tab_3" data-toggle="tab">Parcelas</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="tab_1">
+                                <div class="box-body table-responsive no-padding">
+                                    <form role="form">
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Núm. Pedido:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodPedido" name="txtCodPedido" onchange="Sistema.Pedido.SelecionarPedido(this.value)" class="form-control" tabindex="1" value="0">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-pedido')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Data:</p>
+                                                    @Html.TextBox("txtDataPedido", DateTime.Now.ToString("yyyy-MM-dd"), new { type = "date", @class = "form-control", disabled = "true" })
+                                                    @*<input type="text" id="txtDataPedido" name="txtDataPedido" class="form-control" disabled>*@
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Status:</p>
+                                                    <input type="text" id="txtStatus" name="txtStatus" class="form-control" value="Novo" disabled>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Grupo:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodGrupo" name="txtCodGrupo" onchange="Sistema.Pedido.ChangeGrupo()" class="form-control" tabindex="2">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodGrupo" id="btnCodGrupo" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-grupo')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescGrupo" name="txtDescGrupo" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Cliente:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodCliente" name="txtCodCliente" onchange="Sistema.Pedido.ChangeCliente()" class="form-control" tabindex="3" />
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodCliente" id="btnCodCliente" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-cliente')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescCliente" name="txtDescCliente" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Representante:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodRepresentante" name="txtCodRepresentante" onchange="Sistema.Pedido.ChangeRepresentante()" class="form-control" tabindex="4">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodRep" id="btnCodRep" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-representante')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescRepresentante" name="txtDescRepresentante" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Frete:</p>
+                                                    <select class="form-control select2" id="cbFrete" name="cbFrete" style="width: 100%;" tabindex="5">
+                                                        <option value="C">CIF</option>
+                                                        <option value="F">FOB</option>
+                                                        <option value="X" selected="selected">Sem Frete</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Valor Frete:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="vlrFrete" name="vlrFrete" class="form-control" tabindex="6">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Data Entrega:</p>
+                                                    <div class="input-group">
+                                                        @*@Html.TextBox("txtDataEntrega", DateTime.Now.ToString("yyyy-MM-dd"), new { type = "date", @class = "form-control", tabindex = "7" })*@
+                                                        <input type="date" id="txtDataEntrega" name="txtDataEntrega" class="form-control" value="@DateTime.Now" tabindex="7" onblur="Sistema.Pedido.SelecionarDataEntrega()" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Transportadora:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodTransportadora" name="txtCodTransportadora" onchange="Sistema.Pedido.ChangeTransportadora()" class="form-control" tabindex="8">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodTransp" id="btnCodTransp" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-transportadora')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescTransportadora" name="txtDescTransportadora" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Transação:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodTransacao" name="txtCodTransacao" onchange="Sistema.Pedido.ChangeTransacao()" class="form-control" tabindex="9">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodTransacao" id="btnCodTransacao" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-transacao')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescTransacao" name="txtDescTransacao" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Forma de Pgto:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodFormaPgto" name="txtCodFormaPgto" onchange="Sistema.Pedido.ChangeFormaPgto()" class="form-control" tabindex="10">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodFormaPgto" id="btnCodFormaPgto" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-formapgto')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescFormaPgto" name="txtDescFormaPgto" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Condição de Pgto:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodCondPgto" name="txtCodCondPgto" onchange="Sistema.Pedido.ChangeCondPgto()" class="form-control" tabindex="11">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodCondPgto" id="btnCodCondPgto" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-condpgto')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescCondPgto" name="txtDescCondPgto" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Observação do Pedido:</p>
+                                                    <textarea id="txtObsPedido" name="txtObsPedido" class="form-control" rows="3" placeholder="" tabindex="12"></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Observação da NF:</p>
+                                                    <textarea id="txtObsNf" name="txtObsNf" class="form-control" rows="3" placeholder="" tabindex="13"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="padding-top: 25px">
+                                                <div class="col-md-4">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">Veículo:</p>
+                                                    <div class="input-group">
+                                                        <input type="text" id="txtCodVeiculo" name="txtCodVeiculo" onchange="Sistema.Pedido.ChangeVeiculo()" class="form-control" tabindex="14">
+                                                        <div class="input-group-btn">
+                                                            <button type="button" name="btnCodVeiculo" id="btnCodVeiculo" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-veiculo')">...</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p style="padding-top: 10px; margin-bottom: 0px;">&nbsp;</p>
+                                                    <input type="text" id="txtDescVeiculo" name="txtDescVeiculo" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12" style="padding-top: 20px">
+                                            <div id="divGridItensPedido">
+                                                @Html.Partial("GridItensPedido", new List<PedidoItem>())
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="tab_2">
+                                <div class="box-body table-responsive no-padding">
+                                    @Html.Partial("GridAvalista", new List<Cliente>())
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="tab_3">
+                                <div class="box-body table-responsive no-padding">
+                                    <div class="col-md-12">
+                                        @Html.Partial("GridParcelas", new List<Parcela>())
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="col-md-8">
+                                            <p style="padding-top: 10px; margin-bottom: 0px;">Parcelas Válidas?</p>
+                                            <input type="text" class="form-control" id="lblparcvalida" name="lblparcvalida" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p style="padding-top: 10px; margin-bottom: 0px;">% Restante</p>
+                                            <input type="text" class="form-control" id="txtPercentRestante" name="txtPercentRestante" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*<div class="overlay" style="display: none">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>*@
+            </div>
+            <div class="col-md-12" style="padding-right: 25px; padding-left: 25px">
+                <div class="box" style="border-top: 0px">
+                    <div class="box-body">
+                        <div class="col-md-6" style="padding-top: 15px;">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <a class="btn btn-block btn-default" href="@Url.Action("NovoPedido", "Pedido")">
+                                        <i class="fa fa-plus"></i> Novo
+                                    </a>
+                                </div>
+                                <div class="col-md-3" id="divEditarPedido" style="display: none">
+                                    <button type="button" class="btn btn-block btn-default" id="btnEditarPedido" name="btnEditarPedido" onclick="Sistema.Pedido.EditarPedido()">
+                                        <i class="fa fa-save"></i> Editar
+                                    </button>
+                                </div>
+                                <div class="col-md-3" id="divCancelarPedido" style="display: none">
+                                    <button type="button" class="btn btn-block btn-default" id="btnCancelarPedido" name="btnCancelarPedido" onclick="Sistema.Pedido.CancelarPedido()">
+                                        <i class="fa fa-window-close"></i> Cancelar
+                                    </button>
+                                </div>
+                                <div class="col-md-3" id="divFecharPedido">
+                                    <button type="button" class="btn btn-block btn-default" id="btnFecharPedido" name="btnFecharPedido" onclick="Sistema.Pedido.FecharPedido()">
+                                        <i class="fa fa-save"></i> Fechar
+                                    </button>
+                                </div>
+                                <div class="col-md-3" id="divImprimirPedido" style="display: none">
+                                    <a class="btn btn-block btn-default" id="btnImprimirPedido" name="btnImprimirPedido" onclick="Sistema.Pedido.ImprimirPedido()">
+                                        <i class="fa fa-print"></i> Imprimir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <p>Valor Frete:</p>
+                                    <input type="text" class="form-control" id="lblVlrFrete" name="lblVlrFrete" value="0,00" disabled />
+                                </div>
+                                <div class="col-md-3">
+                                    <p>Valor Líquido:</p>
+                                    <input type="text" class="form-control" id="lblVlrLiquido" name="lblVlrLiquido" value="0,00" disabled />
+                                </div>
+                                <div class="col-md-3">
+                                    <p>Arredondamento:</p>
+                                    <input type="text" class="form-control" id="txtVlrArredondamento" name="txtVlrArredondamento" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onblur="Sistema.Pedido.RecalcularItensPedido()" />
+                                </div>
+                                <div class="col-md-3">
+                                    <p>Desconto:</p>
+                                    <input type="text" class="form-control" id="txtVlrDesconto" name="txtVlrDesconto" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onblur="Sistema.Pedido.ValidaDescontoGeral()" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="modal-add-item">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Incluir Itens</h4>
+            </div>
+            <div class="modal-body" style="overflow: hidden">
+                <form>
+                    <div class="row">
+                        <input class="form-control input-sm" id="sequencia_item" name="sequencia_item" type="hidden" value="">
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Cód. Produto:</p>
+                            <div class="input-group">
+                                <input type="text" id="txtCodProduto" name="txtCodProduto" class="form-control" onchange="Sistema.Pedido.SelecionarProduto(this.value)" autofocus />
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.AbrirModal('#modal-produto')">...</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Deriv.:</p>
+                            <div class="input-group">
+                                <select class="form-control" id="cbDerivaco" name="cbDerivacao">
+                                    <option value="0">Selecione</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Dep.:</p>
+                            <div class="input-group">
+                                <select class="form-control" id="cbDeposito" name="cbDeposito">
+                                    <option value="0">Selecione</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Qtde. Produto:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtQtdeProduto" name="txtQtdeProduto" onchange="Sistema.Pedido.CalcularDescontosQuantidade()" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Entrega:</p>
+                            <div class="input-group" style="width: 80%">
+                                @Html.TextBox("txtEntrega", DateTime.Now.ToString("yyyy/MM/dd"), new { type = "date", @class = "form-control" })
+                                @*<input type="date" class="form-control" id="txtEntrega" name="txtEntrega" value="@DateTime.Now" />*@
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Produto:</p>
+                            <div class="input-group" style="width: 100%">
+                                <input type="text" class="form-control" id="txtDescProd" name="txtDescProd" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Tab. Preço:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtTabelaPreco" name="txtTabelaPreco" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Preço Base:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtPrecoBase" name="txtPrecoBase" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Preço Unit.:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtPrecoUnit" name="txtPrecoUnit" disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">% Acre.:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtPerAcre" name="txtPerAcre" onblur="calcularAcrescimo('percentual', this.value, true)" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Vlr. Acre.:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtVlrAcre" name="txtVlrAcre" onblur="calcularAcrescimo('valor', this.value, true)" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">% Desc.:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtPerDesc" name="txtPerDesc" onblur="calcularDesconto('percentual', this.value, true)" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Vlr. Desc.:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtVlrDesc" name="txtVlrDesc" onblur="calcularDesconto('valor', this.value, true)" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Vlr. Liq.:</p>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtVlrLiq" name="txtVlrLiq" onblur="Sistema.Pedido.IncluirItem(false)" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-3" style="margin-top: 25px;">
+                            <div class="btn-toolbar" role="toolbar" aria-label="Toolbar com grupos de botões">
+                                <div id="divBtnAddItem" class="btn-group mr-2" role="group" aria-label="Primeiro grupo">
+                                    <button id="btnAddItem" type="button" class="btn btn-default btn-sm" onclick="Sistema.Pedido.IncluirItem(false)">
+                                        <i class="fa fa-plus"></i> Incluir
+                                    </button>
+                                </div>
+                                <div id="divBtnEditarItem" class="btn-group mr-2" role="group" aria-label="Segundo grupo">
+                                    <button id="btnEditarItem" type="button" class="btn btn-default btn-sm" onclick="Sistema.Pedido.EditarItem(false)">
+                                        <i class="fa fa-plus"></i> Editar
+                                    </button>
+                                </div>
+                                <div id="divBtnCancelarItem" class="btn-group" role="group" aria-label="Terceiro grupo">
+                                    <button id="btnCancelar" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">
+                                        <i class="fa fa-close"></i> Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-pedido">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Consultar Pedidos</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" id="txtPesquisaPedido" name="txtPesquisaPedido" placeholder="Cód. do Pedido" onkeyup="Enter(event)" autofocus />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" id="txtPesquisaPedidoCliente" name="txtPesquisaPedidoCliente" placeholder="Nome do Cliente ou Grupo Empresa" onkeyup="Enter(event)" />
+                    </div>
+                    <div class="col-sm-2">
+                        <button id="btnPesquisaPedido" type="button" class="btn btn-primary btn-sm" onclick="Sistema.Pedido.ObterTodosPedidos()">
+                            <i class="fa fa-search"></i> Pesquisar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="divGridClientes" name="divGridClientes" style='overflow-x: auto; max-height: 300px; padding-top: 10px;'>
+                    @Html.Partial("GridModalPedido", new List<Pedido>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-add-parcela">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Incluir Parcela</h4>
+            </div>
+            <div class="modal-body" style="overflow: hidden">
+                <form>
+                    <div class="row">
+                        <input class="form-control input-sm" id="codigo_parcela" name="codigo_parcela" type="hidden" value="">
+                        <input class="form-control input-sm" id="sequencia_parcela" name="sequencia_parcela" type="hidden" value="">
+                        <div class="col-md-4">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Dt. Vencimento:</p>
+                            <div class="input-group">
+                                @Html.TextBox("DataVencimento", DateTime.Now.ToString("yyyy/MM/dd"), new { type = "date", @class = "form-control" })
+                                @*<input type="date" id="DataVencimento" name="DataVencimento" class="form-control">*@
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">% Parcela:</p>
+                            <div class="input-group">
+                                <input type="text" id="txtPercentual" name="txtPercentual" class="form-control" onkeypress="return(moeda2(this,'.',',',event))" onblur="CalcularValorParcela()" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p style="padding-top: 10px; margin-bottom: 0px;">Valor Parcela:</p>
+                            <div class="input-group">
+                                <input type="text" id="txtValorParcela" name="txtValorParcela" class="form-control" onkeypress="return(moeda2(this,'.',',',event))" onblur="CalcularPercentualParcela()" />
+                            </div>
+                        </div>
+                        <div class="col-md-3" style="margin-top: 25px;">
+                            <div class="btn-toolbar" role="toolbar" aria-label="Toolbar com grupos de botões">
+                                <div id="divBtnAddParcela" class="btn-group mr-2" role="group" aria-label="Primeiro grupo">
+                                    <button id="btnAddParcela" type="button" class="btn btn-default btn-sm" onclick="Sistema.Pedido.InsereParcela()">
+                                        <i class="fa fa-plus"></i> Incluir
+                                    </button>
+                                </div>
+                                <div id="divBtnEditarParcela" class="btn-group mr-2" role="group" aria-label="Segundo grupo">
+                                    <button id="btnEditarParcela" type="button" class="btn btn-default btn-sm" onclick="Sistema.Pedido.AlterarParcela()">
+                                        <i class="fa fa-plus"></i> Editar
+                                    </button>
+                                </div>
+                                <div id="divBtnCancelarParcela" class="btn-group" role="group" aria-label="Terceiro grupo">
+                                    <button id="btnCancelarParcela" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">
+                                        <i class="fa fa-close"></i> Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-grupo">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Grupo de Clientes</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridGrupo" name="divGridGrupo" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalGrupo", new List<Grupo>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-cliente">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Clientes</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="txtPesquisaCliente" name="txtPesquisaCliente" placeholder="Nome do Cliente" onkeyup="Enter(event)" autofocus />
+                    </div>
+                    <div class="col-md-4">
+                        <button id="btnCancelar" type="button" class="btn btn-primary btn-sm" onclick="Sistema.Pedido.ObterTodosClientes()">
+                            <i class="fa fa-search"></i> Pesquisar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="divGridClientes" name="divGridClientes" style='overflow-x: auto; max-height: 400px; padding-top: 10px;'>
+                    @Html.Partial("GridModalCliente", new List<Cliente>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-avalista">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Avalistas</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridClientes" name="divGridAvalistas" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalAvalista", new List<Cliente>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-representante">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Representantes</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridRepresentates" name="divGridRepresentates" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalRepresentante", new List<Representante>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-transportadora">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Transportadoras</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridTransportadora" name="divGridTransportadora" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalTransportadora", new List<Transportadora>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-veiculo">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Veículos</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridVeiculos" name="divGridVeiculos" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalVeiculo", new List<Placa>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-transacao">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Transações</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridTransacao" name="divGridTransacao" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalTransacao", new List<Transacao>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-formapgto">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Formas de Pgto</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridFormaPgto" name="divGridFormaPgto" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalFormaPgto", new List<FormaPagamento>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-condpgto">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Condições de Pgto</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridFormaPgto" name="divGridFormaPgto" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalCondPgto", new List<CondicaoPagamento>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-produto">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Consultar Produtos</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="col-md-8">
+                        <input type="text" id="txtBuscaProduto" name="txtBuscaProduto" class="form-control" onkeyup="Enter(event)" autofocus />
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-default" onclick="Sistema.Pedido.ObterProdutos()">
+                            <i class="fa fa-search"></i> Pesquisar
+                        </button>
+                    </div>
+                    <div class="col-md-12">
+                        <div id="divGridFormaPgto" name="divGridFormaPgto" style='overflow-x: auto; max-height: 400px; margin-top: 10px;'>
+                            @Html.Partial("GridModalProduto", new List<ConsultaProduto>())
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-aprovacao">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Validar Desconto</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="col-md-12">
+                        <div class="form-group has-feedback">
+                            <input type="text" class="form-control" placeholder="Usuário" name="txtLoginAprovacao" id="txtLoginAprovacao" autofocus required>
+                            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <input type="password" class="form-control" placeholder="Senha" name="txtSenhaAprovacao" id="txtSenhaAprovacao" required>
+                            <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button type="button" class="btn btn-primary btn-block btn-flat" onclick="Sistema.Pedido.ValidarDesconto()">Validar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-aprovacao-editar">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Validar Desconto</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="col-md-12">
+                        <div class="form-group has-feedback">
+                            <input type="text" class="form-control" placeholder="Usuário" name="txtLoginAprovacao" id="txtLoginAprovacaoEditar" autofocus required>
+                            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <input type="password" class="form-control" placeholder="Senha" name="txtSenhaAprovacao" id="txtSenhaAprovacaoEditar" required>
+                            <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button type="button" class="btn btn-primary btn-block btn-flat" onclick="Sistema.Pedido.ValidarDescontoEditar()">Validar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-aprovacao-geral">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Validar Desconto</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="col-md-12">
+                        <div class="form-group has-feedback">
+                            <input type="text" class="form-control" placeholder="Usuário" name="txtLoginAprovacao" id="txtLoginAprovacao" autofocus required>
+                            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <input type="password" class="form-control" placeholder="Senha" name="txtSenhaAprovacao" id="txtSenhaAprovacao" required>
+                            <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button type="button" class="btn btn-primary btn-block btn-flat" onclick="Sistema.Pedido.RecalcularItensPedido(false)">Validar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+    $(document).ready(function () {
+        Sistema.Pedido.Init();
+    });
+
+    $(document).on('keyup', function (e) {
+        if (e.keyCode == 13) {
+            Enter();
+        }
+    });
+</script>

@@ -1,0 +1,16 @@
+﻿@using PonteAlta.Models;
+@model List<Cliente>
+
+<table class="table table-striped table-hover table-condensed" width="100%" id="tblAvalistas">
+    <thead>
+        <tr>
+            <th>
+                <button type="button" id="btnAddAvalista" name="btnAddAvalista" class="btn btn-primary" data-toggle="modal">
+                    <i class="fa fa-plus" onclick="Sistema.Pedido.AbrirModal('#modal-avalista')"></i>
+                </button>
+            </th>
+            <th>Código</th>
+            <th>Nome</th>
+        </tr>
+    </thead>
+</table>

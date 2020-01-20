@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C4F709F0-C92E-4412-A96B-F2285261AC37}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PonteAlta.Persistencia</RootNamespace>
+    <AssemblyName>PonteAlta.Persistencia</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FluentNHibernate, Version=1.4.0.0, Culture=neutral, PublicKeyToken=8aa435e3cb308880, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentNHibernate.1.4.0.0\lib\net35\FluentNHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Iesi.Collections.3.2.0.4000\lib\Net35\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernate.3.3.1.4000\lib\Net35\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject, Version=3.3.4.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.3.3.4\lib\net45\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Class1.cs" />
+    <Compile Include="Mapeamento\AvalistaMap.cs" />
+    <Compile Include="Mapeamento\ClienteMap.cs" />
+    <Compile Include="Mapeamento\CondicaoPagamentoMap.cs" />
+    <Compile Include="Mapeamento\DerivacaoMap.cs" />
+    <Compile Include="Mapeamento\FilialMap.cs" />
+    <Compile Include="Mapeamento\FormaPagamentoMap.cs" />
+    <Compile Include="Mapeamento\GrupoMap.cs" />
+    <Compile Include="Mapeamento\ParcelaMap.cs" />
+    <Compile Include="Mapeamento\PedidoItemMap.cs" />
+    <Compile Include="Mapeamento\PedidoMap.cs" />
+    <Compile Include="Mapeamento\PermissaoUsuarioMap.cs" />
+    <Compile Include="Mapeamento\PlacaMap.cs" />
+    <Compile Include="Mapeamento\ProdutoDepositoMap.cs" />
+    <Compile Include="Mapeamento\RepresentanteMap.cs" />
+    <Compile Include="Mapeamento\TransacaoMap.cs" />
+    <Compile Include="Mapeamento\TransportadoraMap.cs" />
+    <Compile Include="Mapeamento\UsuarioMap.cs" />
+    <Compile Include="Models\Avalista.cs" />
+    <Compile Include="Models\Cliente.cs" />
+    <Compile Include="Models\CondicaoPagamento.cs" />
+    <Compile Include="Models\ConsultarProduto.cs" />
+    <Compile Include="Models\Derivacao.cs" />
+    <Compile Include="Models\Empresa.cs" />
+    <Compile Include="Models\Filial.cs" />
+    <Compile Include="Models\FormaPagamento.cs" />
+    <Compile Include="Models\Grupo.cs" />
+    <Compile Include="Models\GrupoEmpresa.cs" />
+    <Compile Include="Models\LoginModel.cs" />
+    <Compile Include="Models\Parcela.cs" />
+    <Compile Include="Models\Pedido.cs" />
+    <Compile Include="Models\PedidoItem.cs" />
+    <Compile Include="Models\PermissaoUsuario.cs" />
+    <Compile Include="Models\Placa.cs" />
+    <Compile Include="Models\ProdutoDeposito.cs" />
+    <Compile Include="Models\Representante.cs" />
+    <Compile Include="Models\Transacao.cs" />
+    <Compile Include="Models\Transportadora.cs" />
+    <Compile Include="Models\Usuario.cs" />
+    <Compile Include="Persistencia\ModuloSapiens.cs" />
+    <Compile Include="Persistencia\SessionFactory.cs" />
+    <Compile Include="Persistencia\UnidadeTrabalho.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Estrutura\Estrutura.csproj">
+      <Project>{a54d81cf-08c7-4f59-b90b-fadccc091b61}</Project>
+      <Name>Estrutura</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
