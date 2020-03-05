@@ -1,0 +1,98 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Consulta Produto";
+}
+@using PonteAlta.Models;
+@using PonteAlta.Persistencia.Models;
+
+<style>
+    [type="date"]::-webkit-inner-spin-button {
+        display: none;
+    }
+
+    [type="date"]::-webkit-calendar-picker-indicator {
+        display: none;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            Consulta Produto
+            <small>&nbsp;</small>
+        </h1>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box-body">
+                    <form role="form" onsubmit="Sistema.ConsultaProduto.ObterProduto()">
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <input type="text" id="txtCodProduto" name="txtCodProduto" class="form-control" placeholder="Cód. Produto" onkeyup="Enter(event)" autofocus tabindex="1" />
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" id="txtDescProduto" name="txtDescProduto" class="form-control" placeholder="Desc. Produto" onkeyup="Enter(event)" autofocus tabindex="2" />
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="input-group">
+                                        <input type="text" id="txtTabelaPreco" name="txtTabelaPreco" placeholder="Tabela de Preço" onkeyup="Enter(event)" onchange="Sistema.ConsultaProduto.ChangeTabelaPreco()" class="form-control" tabindex="3">
+                                        <div class="input-group-btn">
+                                            <button type="button" name="btnCodTabelaPreco" id="btnCodTabelaPreco" class="btn btn-primary" data-toggle="modal" onclick="Sistema.ConsultaProduto.AbrirModal('#modal-tabelapreco')" tabindex="4">...</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-default" type="button" onclick="Sistema.ConsultaProduto.ObterProduto()">
+                                        <i class="fa fa-search"></i> Consultar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="col-md-12">
+                        <div id="divGridConsultaProd" name="divGridConsultaProd" style='overflow-x: auto; max-height: 400px; margin-top: 10px;'>
+                            @Html.Partial("GridModalProduto", new List<ProdutoConsultar>())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="modal-tabelapreco">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Tabelas de Preços</h4>
+            </div>
+            <div class="modal-body">
+                <div id="divGridClientes" name="divGridAvalistas" style='overflow-x: auto; max-height: 400px;'>
+                    @Html.Partial("GridModalTabelaPreco", new List<TabelaPreco>())
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<script>
+    $(document).ready(function () {
+        Sistema.ConsultaProduto.Init();
+    });
+</script>

@@ -28,6 +28,7 @@
 
     <script src="~/Scripts/UtilJS.js"></script>
     <script src="~/Scripts/Pedido/pedido.js"></script>
+    <script src="~/Scripts/ConsultaProduto/ConsultaProduto.js"></script>
     <script src="~/Scripts/Pedido/relatorio.js"></script>
 
 </head>
@@ -167,7 +168,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $('.sidebar-menu li a').click(function () {
-                if (!this.href.includes("#")) {
+                if (!this.href.includes("#") && !this.href.includes("ConsultaProduto/Index")) {
                     Sistema.Pedido.Load(true);
                 }
             });

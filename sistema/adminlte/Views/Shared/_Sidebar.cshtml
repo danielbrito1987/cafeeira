@@ -22,6 +22,11 @@
                     @*<li class="@Html.IsSelected(action: "Index")"><a href="@Url.Action("Index", "HistoricoCliente")"><i class="fa fa-circle-o"></i> Histórico de Clientes</a></li>*@
                 </ul>
             </li>
+            <li class="@Html.IsSelected(controller: "ConsultaProduto")">
+                <a href="@Url.Action("Index", "ConsultaProduto")" target="_blank">
+                    <i class="fa fa-search"></i> <span>Consulta Produto</span>
+                </a>
+            </li>
             @*<li class="@Html.IsSelected(controller: "Dashboard") treeview">
             <a href="@Url.Action("Dashboardv1", "Dashboard")">
                 <i class="fa fa-dashboard"></i> <span>Dashboard</span>

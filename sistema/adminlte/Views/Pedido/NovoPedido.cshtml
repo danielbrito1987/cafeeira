@@ -52,7 +52,7 @@
                     <div class="nav-tabs-custom">
                         <ul class="nav nav-tabs">
                             <li class="active"><a href="#tab_1" data-toggle="tab">Dados Gerais</a></li>
-                            <li><a href="#tab_2" data-toggle="tab">Avalistas</a></li>
+                            <!--<li><a href="#tab_2" data-toggle="tab">Avalistas</a></li>-->
                             <li><a href="#tab_3" data-toggle="tab">Parcelas</a></li>
                         </ul>
 
@@ -248,11 +248,11 @@
                                 </div>
                             </div>
 
-                            <div class="tab-pane" id="tab_2">
+                            <!--<div class="tab-pane" id="tab_2">
                                 <div class="box-body table-responsive no-padding">
                                     @Html.Partial("GridAvalista", new List<Cliente>())
                                 </div>
-                            </div>
+                            </div>-->
 
                             <div class="tab-pane" id="tab_3">
                                 <div class="box-body table-responsive no-padding">
@@ -323,11 +323,11 @@
                                 </div>
                                 <div class="col-md-3">
                                     <p>Arredondamento:</p>
-                                    <input type="text" class="form-control" id="txtVlrArredondamento" name="txtVlrArredondamento" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onblur="Sistema.Pedido.RecalcularItensPedido()" />
+                                    <input type="text" class="form-control" id="txtVlrArredondamento" name="txtVlrArredondamento" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.RecalcularItensPedido()" />
                                 </div>
                                 <div class="col-md-3">
                                     <p>Desconto:</p>
-                                    <input type="text" class="form-control" id="txtVlrDesconto" name="txtVlrDesconto" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onblur="Sistema.Pedido.ValidaDescontoGeral()" />
+                                    <input type="text" class="form-control" id="txtVlrDesconto" name="txtVlrDesconto" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.ValidaDescontoGeral()" />
                                 </div>
                             </div>
                         </div>

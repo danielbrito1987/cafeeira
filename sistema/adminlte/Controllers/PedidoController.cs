@@ -14,7 +14,6 @@ using System.Web.Script.Serialization;
 using System.Text;
 using System.Globalization;
 using RazorToPdf;
-using RazorToPdf;
 
 namespace adminlte.Controllers
 {
@@ -1708,7 +1707,7 @@ namespace adminlte.Controllers
                     //itemPedidoNovo.USU_HorDsc = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString();
                     //itemPedidoNovo.USU_UsuDsc = codUsuarioLogado.ToString();
                     itemPedidoNovo.USU_DatDsc = item.DataDesconto;
-                    itemPedidoNovo.USU_HorDsc = item.HoraDesconto;
+                    itemPedidoNovo.USU_HorDsc = TimeSpan.Parse(item.HoraDesconto).TotalMinutes.ToString();
                     itemPedidoNovo.USU_UsuDsc = item.UsuarioDesconto;
 
                 }
@@ -2123,7 +2122,7 @@ namespace adminlte.Controllers
                 //itemPedido.ValorLiquido = Math.Round((totalLiquidoCalculado + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario), 2, MidpointRounding.AwayFromZero);
                 //itemPedido.ValorLiquido = Math.Round(totalLiquidoCalculado, 2, MidpointRounding.AwayFromZero) + Math.Round(itemPedido.ValorAcrescimoUsuario, 2, MidpointRounding.AwayFromZero) - Math.Round(itemPedido.ValorDescontoUsuario, 2, MidpointRounding.AwayFromZero);
 
-                itemPedido.ValorLiquido = Math.Round((itemPedido.PrecoUnitario * itemPedido.QuantidadePedido) + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario, 5);
+                itemPedido.ValorLiquido = Math.Round((itemPedido.PrecoBase * itemPedido.QuantidadePedido) + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario, 5);
 
                 itemPedido.ValorBruto = totalLiquidoCalculado;
                 itemPedido.ValorBase = itemPedido.QuantidadePedido * Math.Round(itemPedido.PrecoBase, 5, MidpointRounding.AwayFromZero);

@@ -810,8 +810,13 @@ Sistema.Pedido = {
             type: 'GET',
             data: { codFiltro: codigo, codigoTransportadora: codTransportadora },
             success: function (data) {
-                $('#txtCodVeiculo').val(data.Data.PlacaVeiculo);
-                $('#txtDescVeiculo').val(data.Data.PlacaVeiculo);
+				if(data.Success) {
+					$('#txtCodVeiculo').val(data.Data.PlacaVeiculo);
+					$('#txtDescVeiculo').val(data.Data.PlacaVeiculo);
+				} else {
+					$('#txtCodVeiculo').val(codigo);
+					$('#txtDescVeiculo').val(codigo);
+				}
             }
         });
     },
@@ -912,6 +917,10 @@ Sistema.Pedido = {
                 codDer: codDeriv
             },
             success: function (data) {
+				if(data.Success == false) {
+					Swal.fire('Atenção', 'Produto não encontrado.', 'error');
+					return;
+				} else
                 if (data.Data == 0) {
                     Swal.fire('Atenção', 'Produto com Preço Base zerado.', 'error');
                     return;
@@ -1521,11 +1530,11 @@ Sistema.Pedido = {
         item.CodigoDep = codDep;
         item.PrecoBase = precoBase.replace(',', '.');
         item.QuantidadePedido = qtdPedido;
-        item.ValorDescontoUsuario = vlrDes.replace(',', '.');
+        item.ValorDescontoUsuario = vlrDes.replace('.', '').replace(',', '.');
         item.PercentualDescontoUsuario = perDes.replace(',', '.');
         item.PercentualAcrescimoUsuario = perAcr.replace(',', '.');
-        item.ValorAcrescimoUsuario = vlrAcr.replace(',', '.');
-        item.ValorLiquido = vlrLiq.replace(',', '.');
+        item.ValorAcrescimoUsuario = vlrAcr.replace('.', '').replace(',', '.');
+        item.ValorLiquido = vlrLiq.replace('.', '').replace(',', '.');
         item.DataEntrega = entrega;
         item.CodigoTRP = codTpr;
         item.PrecoUnitario = vlrUnit.replace(',', '.');
@@ -1659,11 +1668,11 @@ Sistema.Pedido = {
         item.CodigoDep = codDep;
         item.PrecoBase = precoBase;
         item.QuantidadePedido = qtdPedido;
-        item.ValorDescontoUsuario = vlrDes.replace(',', '.');
+        item.ValorDescontoUsuario = vlrDes.replace('.', '').replace(',', '.');
         item.PercentualDescontoUsuario = perDes.replace(',', '.');
         item.PercentualAcrescimoUsuario = perAcr.replace(',', '.');
-        item.ValorAcrescimoUsuario = vlrAcr.replace(',', '.');
-        item.ValorLiquido = vlrLiq.replace(',', '.');
+        item.ValorAcrescimoUsuario = vlrAcr.replace('.', '').replace(',', '.');
+        item.ValorLiquido = vlrLiq.replace('.', '').replace(',', '.');
         item.DataEntrega = entrega;
         item.CodigoTRP = codTpr;
         item.PrecoUnitario = vlrUnit.replace(',', '.');
@@ -2695,9 +2704,11 @@ Sistema.Pedido = {
             Swal.close();
             $('#modal-aprovacao-geral').modal('show');
             return;
-        } else {
+        } else if(desconto > 0) {
             Sistema.Pedido.RecalcularItensPedido(false);
         }
+		
+		Sistema.Pedido.Load(false);
 
         //var login = $('#txtLoginAprovacao').val();
         //var senha = $('#txtSenhaAprovacao').val();
