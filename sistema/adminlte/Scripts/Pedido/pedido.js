@@ -1443,15 +1443,15 @@ Sistema.Pedido = {
         var vlrAcr = $('#txtVlrAcre').val();
 
         var emissao = $('#txtDataPedido').val().split('-');
+        var dataEntrega = $('#txtEntrega')[0].value.split('-');
 
         var dataEmissao = emissao[2] + '/' + emissao[1] + '/' + emissao[0];
+        var entrega = dataEntrega[2] + '/' + dataEntrega[1] + '/' + dataEntrega[0];
 
         var vlrLiq = $('#txtVlrLiq').val();
-        var dataEntrega = $('#txtEntrega')[0].value;
+        
         var codTpr = $('#txtTabelaPreco').val();
-        var vlrUnit = $('#txtPrecoUnit').val();
-
-        var entrega = FormatarData(dataEntrega);
+        var vlrUnit = $('#txtPrecoUnit').val();        
 
         if (codProduto == null || codProduto == "") {
             Swal.fire('Atenção', 'Favor informar um produto.', 'error');
