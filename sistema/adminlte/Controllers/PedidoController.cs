@@ -31,11 +31,17 @@ namespace adminlte.Controllers
         // GET: Pedido
         public ActionResult Index()
         {
+            if (!UsuarioLogado())
+                return RedirectToAction("Login", "Account");
+
             return View();
         }
 
         public ActionResult NovoPedido()
         {
+            if (!UsuarioLogado())
+                return RedirectToAction("Login", "Account");
+
             TempData["listItemPedido"] = new List<PedidoItem>();
             TempData["listaAvalista"] = new List<Cliente>();
             TempData["listaParcela"] = new List<Parcela>();
@@ -395,7 +401,7 @@ namespace adminlte.Controllers
             int codFilialFiltroPadrao = Convert.ToInt32(Session["filAti"]);
 
             var resultado = UnidadeTrabalho.ObterTodos<Pedido>().Where(x => x.CodEmpresa == codEmpFiltroPadrao
-                                                                                && x.CodFilial == codFilialFiltroPadrao);
+                                                                            && x.CodFilial == codFilialFiltroPadrao);
 
             List<Pedido> list = null;
             if (pesquisar_pedido_codigo > 0 || pesquisar_pedido != "")
@@ -409,7 +415,7 @@ namespace adminlte.Controllers
                     resultado = resultado.Where(x => x.NomeCliente.Contains(pesquisar_pedido) || x.NomeCliente.Contains(pesquisar_pedido));
                 }
 
-                list = resultado.ToList();
+                list = resultado.OrderBy(x => x.DataEmissao).ToList();
             }
 
             TempData["PedidoConsulta"] = list;
@@ -679,7 +685,7 @@ namespace adminlte.Controllers
             {
                 foreach (var item in listItemPedido)
                 {
-                    item.DataEntrega = entrega.AddDays(1).ToShortDateString();
+                    //item.DataEntrega = entrega.AddDays(1).ToShortDateString();
 
                     if (item.CodigoProduto == product.CodigoProduto)
                     {
@@ -769,11 +775,11 @@ namespace adminlte.Controllers
 
         public ActionResult IncluirParcela(string parcela, string EmissaoPedido, string PermiteManutencao)
         {
-            TempData.Keep();
+            TempData.Keep("listaParcela");
 
             Parcela parc = new JavaScriptSerializer().Deserialize<Parcela>(parcela);
 
-            var listItemPedido = TempData["listItemPedido"] as List<PedidoItem>;
+            //var listItemPedido = TempData["listItemPedido"] as List<PedidoItem>;
             var listaParcela = TempData["listaParcela"] as List<Parcela>;
 
             double somaParcelas = 0;
@@ -867,6 +873,7 @@ namespace adminlte.Controllers
                 });
             }
 
+            TempData.Keep("listaParcela");
             TempData["listaParcela"] = listaParcela;
 
             return Json(listaParcela);
@@ -1044,7 +1051,12 @@ namespace adminlte.Controllers
 
             if (valorTotalParcelas != valorLiquidoPedido && valorTotalParcelas != 0 && valorLiquidoPedido != 0)
             {
-                double diferenca = valorLiquidoPedido - valorTotalParcelas;
+                double diferenca = 0;
+
+                if (valorLiquidoPedido > valorTotalParcelas)
+                    diferenca = valorLiquidoPedido - valorTotalParcelas;
+                else
+                    diferenca = valorTotalParcelas - valorLiquidoPedido;
 
                 foreach (var item in listaParcela)
                 {
@@ -1597,7 +1609,7 @@ namespace adminlte.Controllers
             pedidoNovo.USU_ObsEnt = pedido.ObsEntrega;
             //pedidoNovo.USU_QtdSac = (pedido.QtdSaca != null) ? pedido.QtdSaca.ToString() : "";
             pedidoNovo.plaVei = pedido.NomePlaca;
-            pedidoNovo.temPar = (condPgto != null && condPgto.TipoEspecial != null) ? condPgto.TipoEspecial.ToString() : "";
+            pedidoNovo.temPar = (condPgto != null && condPgto.TipoEspecial != null) ? condPgto.ManutencaoParcela.ToString() : "";
             //pedidoNovo.USU_CodCpr = (pedido.TabelaCPR != null) ? pedido.TabelaCPR.ToString() : "";
             pedidoNovo.tnsPro = pedido.CodTransacao.ToString();
             pedidoNovo.vlrFre = PreparaValor(pedido.ValorFrete.ToString());
@@ -2712,11 +2724,25 @@ namespace adminlte.Controllers
             return strRetorno;
         }
 
+        public bool UsuarioLogado()
+        {
+            return Session["codUsu"] != null;
+        }
+
         public string PreparaValor(string valor)
         {
             string valorTratado = valor.Replace(".", "");
 
             return valorTratado;
+        }
+
+        /// <summary>
+        /// Método criado para fazer uma requisição ao servidor, de tempo em tempo, com isso não perde a sessão.
+        /// </summary>
+        /// <returns></returns>
+        public string Ping()
+        {
+            return "OK";
         }
     }
 }

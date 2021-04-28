@@ -17,7 +17,7 @@ using Estrutura.Util;
 
 namespace adminlte.Controllers
 {
-    [Authorize]
+    [RoutePrefix("Account")]
     public class AccountController : Controller
     {
         public IUnidadeTrabalho UnidadeTrabalho { get; set; }
@@ -31,6 +31,7 @@ namespace adminlte.Controllers
 
         //
         // GET: /Account/Login
+        [Route("Account/Login")]
         [AllowAnonymous]
         public ActionResult Login()
         {
@@ -109,7 +110,7 @@ namespace adminlte.Controllers
                         Session["filAti"] = usuario.FILATI.ToString();
                         Session["filAtiNome"] = usuario.FILATI.ToString() + " " + usuario.SIGFIL.ToString();
                         Session["empAti"] = usuario.EMPATI.ToString();
-                        Session["intNet"] = usuario.INTNET.ToString();
+                        Session["intNet"] = usuario.INTNET != null ? usuario.INTNET.ToString() : "";
                         Session["codUsu"] = usuario.CODUSU.ToString();
                         Session["usuarioLogado"] = model.UserName;
                         Session["senhaUsuLogado"] = model.Password;
@@ -159,7 +160,7 @@ namespace adminlte.Controllers
                     //string[] msg = ex.Message.Split(':');
                     //ViewBag.ErrorMessage = msg[1];
                     //if (Tools.removeAcentuacao(ex.Message).Contains("CREDENCIAIS INVALIDAS"))
-                    ViewBag.ErrorMessage = "Usuário ou senha incorretos!";
+                    ViewBag.ErrorMessage = ex.InnerException.Message;
                     //else
                     //    ViewBag.ErrorMessage = ex.Message;
                     

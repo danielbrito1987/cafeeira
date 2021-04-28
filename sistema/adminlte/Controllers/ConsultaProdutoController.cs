@@ -24,6 +24,9 @@ namespace adminlte.Controllers
 
         public ActionResult Index()
         {
+            if (!UsuarioLogado())
+                return RedirectToAction("Login", "Account");
+
             return View();
         }
 
@@ -65,6 +68,11 @@ namespace adminlte.Controllers
             var resultado = UnidadeTrabalho.ExecuteSql<ProdutoConsultar>(query);
 
             return resultado.ToList();
+        }
+
+        public bool UsuarioLogado()
+        {
+            return Session["codUsu"] != null;
         }
 
         private string removeAcentuacao(string palavra)

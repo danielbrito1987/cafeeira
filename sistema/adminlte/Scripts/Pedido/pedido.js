@@ -894,6 +894,9 @@ Sistema.Pedido = {
     },
 
     SelecionarProduto: function (Codigo, codDeriv, descProd) {
+        if (Codigo == null || Codigo == '' || Codigo == undefined)
+            return false;
+
         Sistema.Pedido.Load(true);
 
         var emissao = $('#txtDataPedido').val().split('-');
@@ -1831,8 +1834,15 @@ Sistema.Pedido = {
             $.ajax({
                 url: '/Pedido/IncluirPedido',
                 json: true,
+                contentType: 'application/json',
+                dataType: 'json',
                 data: { pedidoPost: JSON.stringify(pedido), isJson: true, parcelasValidas: $('#lblparcvalida').val() },
                 success: function (result) {
+                    if (result.Message != '') {
+                        Swal.fire("Alerta", result.Message, "error");
+                        return false;
+                    }
+
                     if (result.Data[0].retorno == "OK") {
                         Sistema.Pedido.SelecionarPedido(result.Data[0].numPed);
                         //SistemaWeb.Pedido.SelecionarPedido(result[0].numPed, "focus", true);
@@ -2063,6 +2073,7 @@ Sistema.Pedido = {
                                         //btnEditarPedido.SetVisible(false);
                                         //btnFecharPedido.SetVisible(true);
                                         Sistema.Pedido.SelecionarCondPgto(result.Data[0].CodCondicaoPagamento, true);
+                                        Sistema.Pedido.ObterTodosParcelas(result.Codigo);
                                         Sistema.Pedido.ObterTodosItemPedido(codPedido);
                                         //Sistema.Pedido.RecalcularItensPedido(false);
                                         //gvEditing.Refresh();
@@ -2977,6 +2988,7 @@ Sistema.Pedido = {
                 $('#cbDerivacao').val(null);
                 $('#cbDeposito').val(null);
                 $('#txtDescProd').val(null);
+                $('#txtQtdeProduto').val('');
                 $('#txtTabelaPreco').val(null);
                 $('#txtPrecoBase').val(null);
                 $('#txtPrecoUnit').val(null);
@@ -3001,6 +3013,13 @@ Sistema.Pedido = {
         }
 
         $(modal).modal('show');
+    },
+
+    Ping: function () {
+        $.ajax({
+            url: '/Pedido/Ping',
+            async: false
+        })
     }
 }
 

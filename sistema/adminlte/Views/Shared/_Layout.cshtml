@@ -172,6 +172,10 @@
                     Sistema.Pedido.Load(true);
                 }
             });
+
+            setInterval(function () {
+                Sistema.Pedido.Ping();
+            }, 5000);
         });
     </script>
 

@@ -36,7 +36,7 @@ namespace adminlte.Controllers
                 throw new Exception("Não foi possível realizar uma conexão com o serviço de autenticação.");
 
             GravarPedido.pedidosvendaRelatoriosIn request = new GravarPedido.pedidosvendaRelatoriosIn();
-
+            
             request.numPed = pedido;
             request.numPedSpecified = true;
 
