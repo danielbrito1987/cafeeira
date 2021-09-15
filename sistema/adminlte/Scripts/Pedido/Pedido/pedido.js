@@ -921,7 +921,14 @@ Sistema.Pedido = {
             },
             success: function (data) {
 				if(data.Success == false) {
-					Swal.fire('Atenção', 'Produto não encontrado.', 'error');
+                    Swal.fire('Atenção', 'Produto não encontrado.', 'error');
+
+                    setTimeout(function () {
+                        $('#txtQtdeProduto').focus();
+                    }, 500);
+
+                    $('#txtCodProduto').val(null);
+
 					return;
 				} else
                 if (data.Data == 0) {
@@ -930,6 +937,10 @@ Sistema.Pedido = {
                 } else {
                     $('#modal-produto').modal('hide');
 
+                    setTimeout(function () {
+                        $('#txtQtdeProduto').focus();
+                    }, 500);
+                    
                     $.each(data.Data.ListaDerivacao, function (index, value) {
                         $('#cbDerivacao').append("<option value='" + value.Codigo + "'>" + value.Nome + "</option>");
                     });
@@ -2073,7 +2084,7 @@ Sistema.Pedido = {
                                         //btnEditarPedido.SetVisible(false);
                                         //btnFecharPedido.SetVisible(true);
                                         Sistema.Pedido.SelecionarCondPgto(result.Data[0].CodCondicaoPagamento, true);
-                                        Sistema.Pedido.ObterTodosParcelas(result.Codigo);
+                                        Sistema.Pedido.ObterTodosParcelas(codPedido);
                                         Sistema.Pedido.ObterTodosItemPedido(codPedido);
                                         //Sistema.Pedido.RecalcularItensPedido(false);
                                         //gvEditing.Refresh();
@@ -2983,6 +2994,10 @@ Sistema.Pedido = {
             case '#modal-add-item':
                 $('#divBtnAddItem').show();
                 $('#divBtnEditarItem').hide();
+
+                setTimeout(function () {
+                    $('input[name="txtCodProduto"]').focus();
+                }, 500);
 
                 $('#txtCodProduto').val(null);
                 $('#cbDerivacao').val(null);

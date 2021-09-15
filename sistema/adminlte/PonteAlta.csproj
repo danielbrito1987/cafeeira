@@ -4523,8 +4523,9 @@
     <Content Include="Scripts\jquery.globalize\cultures\globalize.culture.zu.js" />
     <Content Include="Scripts\jquery.globalize\cultures\globalize.cultures.js" />
     <Content Include="Scripts\jquery.globalize\globalize.js" />
-    <Content Include="Scripts\Pedido\pedido.js" />
-    <Content Include="Scripts\Pedido\relatorio.js" />
+    <Content Include="Scripts\Pedido\ConsultaProduto\ConsultaProduto.js" />
+    <Content Include="Scripts\Pedido\Pedido\pedido.js" />
+    <Content Include="Scripts\Pedido\Pedido\relatorio.js" />
     <Content Include="Scripts\UtilJS.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

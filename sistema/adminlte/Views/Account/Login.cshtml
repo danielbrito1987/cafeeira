@@ -64,7 +64,7 @@
     <!-- iCheck -->
     <script src="~/Scripts/adminlte/plugins/iCheck/icheck.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
-    <script src="~/Scripts/Pedido/pedido.js"></script>
+    <script src="~/Scripts/Pedido/Pedido/pedido.js"></script>
 
     <script type="text/javascript">
         function autenticar() {
@@ -107,10 +107,10 @@
         }
 
         $("input[name=Username],input[name=Password]").keypress(function (e) {
-        if (e.which == 13) {
-            autenticar();
-        }
-    });
+            if (e.which == 13) {
+                autenticar();
+            }
+        });
     </script>
 </body>
 </html>

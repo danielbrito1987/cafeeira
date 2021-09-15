@@ -129,7 +129,7 @@
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <p style="padding-top: 10px; margin-bottom: 0px;">Frete:</p>
-                                                    <select class="form-control select2" id="cbFrete" name="cbFrete" style="width: 100%;" tabindex="5">
+                                                    <select class="form-control form-control-lg" id="cbFrete" name="cbFrete" style="width: 100%;" tabindex="5">
                                                         <option value="C">CIF</option>
                                                         <option value="F">FOB</option>
                                                         <option value="X" selected="selected">Sem Frete</option>
@@ -351,7 +351,7 @@
                 <form>
                     <div class="row">
                         <input class="form-control input-sm" id="sequencia_item" name="sequencia_item" type="hidden" value="">
-                        <div class="col-md-2">
+                        <div class="col-md-4" style="max-width: 30%;">
                             <p style="padding-top: 10px; margin-bottom: 0px;">Cód. Produto:</p>
                             <div class="input-group">
                                 <input type="text" id="txtCodProduto" name="txtCodProduto" class="form-control" onchange="Sistema.Pedido.SelecionarProduto(this.value)" autofocus />
@@ -363,7 +363,7 @@
                         <div class="col-md-2">
                             <p style="padding-top: 10px; margin-bottom: 0px;">Deriv.:</p>
                             <div class="input-group">
-                                <select class="form-control" id="cbDerivaco" name="cbDerivacao">
+                                <select class="form-control form-control-lg" id="cbDerivaco" name="cbDerivacao">
                                     <option value="0">Selecione</option>
                                 </select>
                             </div>
@@ -371,7 +371,7 @@
                         <div class="col-md-2">
                             <p style="padding-top: 10px; margin-bottom: 0px;">Dep.:</p>
                             <div class="input-group">
-                                <select class="form-control" id="cbDeposito" name="cbDeposito">
+                                <select class="form-control form-control-lg" id="cbDeposito" name="cbDeposito">
                                     <option value="0">Selecione</option>
                                 </select>
                             </div>
