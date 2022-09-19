@@ -969,7 +969,7 @@ namespace adminlte.Controllers
 
         }
 
-        public ActionResult RecalculaItens(string tipoCalculo, string tipo_especial, string taxa_juros, string total_parcelas, string agComercial = null, string agEstoque = null, string codTabela = null, string dataEmissao = null, string condPgto = null, string codCli = null, string transProd = null, string codDerivacao = null, string dataIniJur = null, string codRepresentante = null, double vlrDescontoTotal = 0, double vlrArredondamento = 0)
+        public ActionResult RecalculaItens(string tipoCalculo, string tipo_especial, string taxa_juros, string total_parcelas, string agComercial = null, string agEstoque = null, string codTabela = null, string dataEmissao = null, string condPgto = null, string codCli = null, string transProd = null, string codDerivacao = null, string dataIniJur = null, string codRepresentante = null, double vlrDescontoTotal = 0, double vlrArredondamento = 0, double vlrLiquido = 0)
         {
             TempData.Keep();
 
@@ -1013,8 +1013,28 @@ namespace adminlte.Controllers
 
                         foreach (PedidoItem itemPedido in listItemPedido)
                         {
-                            itemPedido.ValorDescontoUsuario = itemPedido.ValorDescontoUsuario + (vlrDescontoTotal / listItemPedido.Count);
-                            itemPedido.ValorAcrescimoUsuario = itemPedido.ValorAcrescimoUsuario + (vlrArredondamento / listItemPedido.Count);
+                            var percentual = vlrLiquido > 0 ? (vlrDescontoTotal * 100) / vlrLiquido : 0;
+                            var percentAcrescimo = vlrLiquido > 0 ? (vlrArredondamento * 100) / vlrLiquido : 0;
+                            var valorLiquidoItem = itemPedido.PrecoUnitario * itemPedido.QuantidadePedido;
+
+                            itemPedido.ValorDescontoUsuario = percentual > 0 ? valorLiquidoItem * (percentual / 100) : 0;
+                            itemPedido.ValorAcrescimoUsuario = percentAcrescimo > 0 ? valorLiquidoItem * (percentAcrescimo / 100) : 0;
+
+                            if(itemPedido.ValorDescontoUsuario > 0)
+                            {
+                                string hora = "";
+                                string minutos = "";
+                                string segundo = "";
+
+                                hora = DateTime.Now.Hour < 10 ? string.Format("0{0}", DateTime.Now.Hour) : DateTime.Now.Hour.ToString();
+                                minutos = DateTime.Now.Minute < 10 ? string.Format("0{0}", DateTime.Now.Minute) : DateTime.Now.Minute.ToString();
+                                segundo = DateTime.Now.Second < 10 ? string.Format("0{0}", DateTime.Now.Second) : DateTime.Now.Second.ToString();
+
+                                itemPedido.HoraDesconto = hora + ":" + minutos + ":" + segundo;
+                            }
+                            
+                            //itemPedido.ValorDescontoUsuario = itemPedido.ValorDescontoUsuario + (vlrDescontoTotal / listItemPedido.Count);
+                            //itemPedido.ValorAcrescimoUsuario = itemPedido.ValorAcrescimoUsuario + (vlrArredondamento / listItemPedido.Count);
                             //itemPedido.ValorLiquido = (itemPedido.PrecoUnitario * itemPedido.QuantidadePedido) + (vlrArredondamento / listItemPedido.Count) - (vlrDescontoTotal / listItemPedido.Count);
                             //prod = produtosUnicos.Where(x => x.Codpro == itemPedido.CodigoProduto && x.Codder == itemPedido.CodigoDerivacao).FirstOrDefault();
                             //if (prod != null && (prod.Prebas != Convert.ToDecimal(itemPedido.PrecoBase)))
@@ -1126,7 +1146,8 @@ namespace adminlte.Controllers
             var listItemPedido = TempData["listItemPedido"] as List<PedidoItem>;
             var listaParcela = TempData["listaParcela"] as List<Parcela>;
 
-            double liquidoTotal = frete + listItemPedido.Sum(x => x.ValorLiquido);
+            //double liquidoTotal = frete + listItemPedido.Sum(x => x.ValorLiquido);
+            double liquidoTotal = frete + Convert.ToDouble(ValorLiquido.Replace('.', ','));
             string tipoCalculo = string.Empty;
             List<Parcela> listaP = new List<Parcela>();
 
@@ -1228,9 +1249,21 @@ namespace adminlte.Controllers
             TempData.Keep();
             int codEmpFiltroPadrao = Convert.ToInt32(Session["empAti"]);
             int codFilialFiltroPadrao = Convert.ToInt32(Session["filAti"]);
+            List<PedidoItem> itens = new List<PedidoItem>();
 
             var resultado = UnidadeTrabalho.ObterTodos<PedidoItem>().Where(x => x.Empresa == codEmpFiltroPadrao && x.Filial == codFilialFiltroPadrao && x.Pedido.Codigo == codPedido).OrderBy(x => x.Sequencia);
-            TempData["listItemPedido"] = resultado.ToList();
+
+            foreach (var item in resultado.ToList())
+            {
+                int minutes = Convert.ToInt32(item.HoraDesconto);
+                var result = TimeSpan.FromMinutes(minutes);
+
+                item.HoraDesconto = result.ToString(@"hh\:mm");
+
+                itens.Add(item);
+            }
+
+            TempData["listItemPedido"] = itens;
 
             return Json(resultado.ToList());
             //Dictionary<String, Object> parameters = new Dictionary<String, Object>();
@@ -1371,8 +1404,8 @@ namespace adminlte.Controllers
                 itemPedidoNovo.qtdPed = (item.QuantidadePedido > 0) ? item.QuantidadePedido.ToString() : "0";
                 itemPedidoNovo.preUni = (item.PrecoUnitario > 0) ? PreparaValor(item.PrecoUnitario.ToString("N5")) : "0";
                 itemPedidoNovo.opeExe = "I"; //"A" para Alterar, "I" para Inserir, "C" para Carregar,  "E" para excluir
-                itemPedidoNovo.vlrAcr = (item.ValorAcrescimoUsuario > 0) ? PreparaValor(item.ValorAcrescimoUsuario.ToString()) : "0";
-                itemPedidoNovo.vlrDsc = (item.ValorDescontoUsuario > 0) ? PreparaValor(item.ValorDescontoUsuario.ToString()) : "0";
+                itemPedidoNovo.vlrAcr = (item.ValorAcrescimoUsuario > 0) ? PreparaValor(Math.Round(item.ValorAcrescimoUsuario, 2, MidpointRounding.AwayFromZero).ToString()) : "0";
+                itemPedidoNovo.vlrDsc = (item.ValorDescontoUsuario > 0) ? PreparaValor(Math.Round(item.ValorDescontoUsuario, 2, MidpointRounding.AwayFromZero).ToString()) : "0";
                 itemPedidoNovo.perAcr = (item.PercentualAcrescimoUsuario > 0) ? PreparaValor(item.PercentualAcrescimoUsuario.ToString()) : "0";
                 itemPedidoNovo.perDsc = (item.PercentualDescontoUsuario > 0) ? PreparaValor(item.PercentualDescontoUsuario.ToString()) : "0";
                 itemPedidoNovo.codDer = (item.CodigoDerivacao != null) ? item.CodigoDerivacao.ToString() : " ";
@@ -1699,8 +1732,8 @@ namespace adminlte.Controllers
                 itemPedidoNovo.qtdPed = (item.QuantidadePedido > 0) ? item.QuantidadePedido.ToString() : "0";
                 itemPedidoNovo.preUni = (item.PrecoUnitario > 0) ? PreparaValor(item.PrecoUnitario.ToString("N5")) : "0";
                 itemPedidoNovo.opeExe = "I";
-                itemPedidoNovo.vlrAcr = (item.ValorAcrescimoUsuario > 0) ? PreparaValor(item.ValorAcrescimoUsuario.ToString()) : "0";
-                itemPedidoNovo.vlrDsc = (item.ValorDescontoUsuario > 0) ? PreparaValor(item.ValorDescontoUsuario.ToString()) : "0";
+                itemPedidoNovo.vlrAcr = (item.ValorAcrescimoUsuario > 0) ? PreparaValor(Math.Round(item.ValorAcrescimoUsuario, 2, MidpointRounding.AwayFromZero).ToString()) : "0";
+                itemPedidoNovo.vlrDsc = (item.ValorDescontoUsuario > 0) ? PreparaValor(Math.Round(item.ValorDescontoUsuario, 2, MidpointRounding.AwayFromZero).ToString()) : "0";
                 itemPedidoNovo.perAcr = (item.PercentualAcrescimoUsuario > 0) ? PreparaValor(item.PercentualAcrescimoUsuario.ToString()) : "0";
                 itemPedidoNovo.perDsc = (item.PercentualDescontoUsuario > 0) ? PreparaValor(item.PercentualDescontoUsuario.ToString()) : "0";
                 itemPedidoNovo.codDer = (item.CodigoDerivacao != null) ? item.CodigoDerivacao.ToString() : " ";
@@ -1718,6 +1751,7 @@ namespace adminlte.Controllers
                     //itemPedidoNovo.USU_DatDsc = DateTime.Today.ToString("dd/MM/yyyy");
                     //itemPedidoNovo.USU_HorDsc = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString();
                     //itemPedidoNovo.USU_UsuDsc = codUsuarioLogado.ToString();
+
                     itemPedidoNovo.USU_DatDsc = item.DataDesconto;
                     itemPedidoNovo.USU_HorDsc = TimeSpan.Parse(item.HoraDesconto).TotalMinutes.ToString();
                     itemPedidoNovo.USU_UsuDsc = item.UsuarioDesconto;
@@ -2342,14 +2376,106 @@ namespace adminlte.Controllers
 
             int codigoPedido = !string.IsNullOrEmpty(codPedido) ? Convert.ToInt32(codPedido) : 0;
 
-            ConsultaProduto resultado = ObterProdutoUnico(codEmpFiltroPadrao, codFilialFiltroPadrao, codProduto, descProduto, dataEmissao, codCli, transProd, condPgto, codDerivacao);
+            //ConsultaProduto resultado = ObterProdutoUnico(codEmpFiltroPadrao, codFilialFiltroPadrao, codProduto, descProduto, dataEmissao, codCli, transProd, condPgto, codDerivacao);
+            var resultado = PesquisarProduto(codEmpFiltroPadrao, codFilialFiltroPadrao, codProduto, descProduto, "MGMG");
 
-            PedidoItem itemPedido = ConverteListaParaPedidoItem(resultado, tipo_especial, taxa_juros, total_parcelas, codEmpFiltroPadrao, codFilialFiltroPadrao, codDerivacao, Convert.ToDouble(qtdProduto), vlrAcre, percAcre, vlrDesc, percDesc);
+            PedidoItem itemPedido = ConverteProdutoParaPedidoItem(resultado.FirstOrDefault(), tipo_especial, taxa_juros, total_parcelas, codEmpFiltroPadrao, codFilialFiltroPadrao, codDerivacao, Convert.ToDouble(qtdProduto), vlrAcre, percAcre, vlrDesc, percDesc);
 
             if (itemPedido.PrecoBase > 0)
                 return Json(itemPedido, JsonRequestBehavior.AllowGet);
 
             return Json(itemPedido.PrecoBase, JsonRequestBehavior.AllowGet);
+        }
+
+        private List<ProdutoConsultar> PesquisarProduto(int codEmpFiltroPadrao, int codFilialFiltroPadrao, string codProduto, string descProduto, string codTpr)
+        {
+            string query = string.Format(@"DECLARE  @VCodEmp INTEGER = {0},
+		                                             @VCodFil INTEGER = {1},
+		                                             @VCodTpr VARCHAR(4) = '{2}',
+		                                             @VCodPro VARCHAR(14) = '{3}',		 
+		                                             @VDesPro VARCHAR(100) = '{4}'
+                                            SELECT *
+                                            FROM dbo.fnConsultaPreco(@VCodEmp,
+						                                             @VCodFil,
+						                                             @VCodTpr,
+						                                             @VCodPro,									
+						                                             @VDesPro);", codEmpFiltroPadrao,
+                                                                                codFilialFiltroPadrao,
+                                                                                codTpr,
+                                                                                !string.IsNullOrEmpty(codProduto) ? removeAcentuacao(codProduto) : string.Empty,
+                                                                                !string.IsNullOrEmpty(descProduto) ? removeAcentuacao(descProduto) : string.Empty);
+
+            var resultado = UnidadeTrabalho.ExecuteSql<ProdutoConsultar>(query);
+
+            return resultado.ToList();
+        }
+
+        private PedidoItem ConverteProdutoParaPedidoItem(ProdutoConsultar item, string tipo_especial, string taxa_juros, string total_parcelas, int codEmpFiltroPadrao, int codFilialFiltroPadrao, string codDerivacao = null, double qtdeProduto = 0, double vlrAcre = 0, double percAcre = 0, double vlrDesc = 0, double percDesc = 0)
+        {
+            if (item != null)
+            {
+                PedidoItem p = new PedidoItem();
+
+                p.CodigoProduto = (item.CodPro != null) ? item.CodPro : "";
+                //p.TemDerivacao = item.TemDer;
+                p.DescricaoProduto = (item.DesPro != null) ? item.DesPro : "";
+                p.UnidadeMedida = (item.UniMed != null) ? item.UniMed : "";
+                //p.CodigoAgrupamento = (!string.IsNullOrEmpty(item.Codage)) ? item.Codage : "";
+                //p.Agrupamento = (item.Desage != null) ? item.Desage : "";
+                p.PrecoBase = (item.PreBas > 0) ? Convert.ToDouble(item.PreBas) : 0;
+                p.PrecoUnitario = tipo_especial == "N" ? Convert.ToDouble(CalculaPrecoUnitario(taxa_juros, total_parcelas, item.PreBas)) : Convert.ToDouble(item.PreBas);
+                p.codTabela = (!string.IsNullOrEmpty(item.CodTpr)) ? item.CodTpr : "";
+                p.CodigoTRP = (!string.IsNullOrEmpty(item.CodTpr)) ? item.CodTpr : "";
+                p.DerivacaoSelecionada = item.CodDer;
+                //p.DepositoSelecionado = item.CodDep;
+                //p.CodigoDep = item.Coddep;
+                p.CodigoDerivacao = item.CodDer;
+                p.SalEst = Convert.ToDouble(item.SalEst);
+                p.DataEntrega = DateTime.Today.ToShortDateString();
+                p.QuantidadePedido = qtdeProduto;
+                p.ValorAcrescimoUsuario = vlrAcre;
+                p.PercentualAcrescimoUsuario = percAcre;
+                p.ValorDescontoUsuario = vlrDesc;
+                p.PercentualDescontoUsuario = percDesc;
+                p.ValorLiquido = ((p.PrecoBase * p.QuantidadePedido) + p.ValorAcrescimoUsuario) - p.ValorDescontoUsuario;
+
+                var resultadoDerivacao = UnidadeTrabalho.ObterTodos<Derivacao>().Where(x => x.CodEmpresa == codEmpFiltroPadrao
+                                                                                            && x.CodProduto == item.CodPro).ToList();
+
+                List<Derivacao> listaDerivacao = new List<Derivacao>();
+
+                foreach (var der in resultadoDerivacao)
+                {
+                    Derivacao prod = new Derivacao();
+                    prod.Codigo = der.Codigo;
+                    prod.Nome = der.Nome;
+
+                    listaDerivacao.Add(prod);
+                }
+
+                var produtoDeposito = UnidadeTrabalho.ObterTodos<ProdutoDeposito>().Where(pd => pd.Empresa == codEmpFiltroPadrao &&
+                                                                                                pd.Filial == codFilialFiltroPadrao &&
+                                                                                                pd.Produto == item.CodPro);
+                if (!string.IsNullOrWhiteSpace(codDerivacao))
+                {
+                    produtoDeposito = produtoDeposito.Where(pd => pd.Derivacao.Equals(codDerivacao));
+                }
+                else if (resultadoDerivacao.Count() > 0)
+                {
+                    if (!string.IsNullOrWhiteSpace(resultadoDerivacao.FirstOrDefault().Codigo))
+                    {
+                        string codDeri = resultadoDerivacao.FirstOrDefault().Codigo;
+                        produtoDeposito = produtoDeposito.Where(pd => pd.Derivacao.Equals(codDeri));
+                    }
+                }
+
+                p.ListaDerivacao = listaDerivacao;
+                p.ListaDepositos = produtoDeposito.ToList();
+
+                return p;
+            }
+            else
+                return null;
         }
 
         private PedidoItem ConverteListaParaPedidoItem(ConsultaProduto item, string tipo_especial, string taxa_juros, string total_parcelas, int codEmpFiltroPadrao, int codFilialFiltroPadrao, string codDerivacao = null, double qtdeProduto = 0, double vlrAcre = 0, double percAcre = 0, double vlrDesc = 0, double percDesc = 0)

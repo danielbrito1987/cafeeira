@@ -3,7 +3,9 @@
 Sistema.Pedido = {
     Init: function () {
         var hoje = new Date();
-        $('#txtDataPedido').val(hoje.toLocaleDateString('pt-BR'));
+
+        if (!$('#txtDataPedido').val())
+            $('#txtDataPedido').val(hoje.toLocaleDateString('pt-BR'));
     },
 
     Load: function (visible) {
@@ -1572,6 +1574,13 @@ Sistema.Pedido = {
                 }
 
                 Sistema.Pedido.Load(false);
+            },
+            error: function (err) {
+                $('#modal-add-item').modal('hide');
+                Sistema.Pedido.GridItemPedido(result.Data);
+                //CalcularTotais();
+                Sistema.Pedido.RecalcularItensPedido(false, updatePedido);
+                Sistema.Pedido.Load(false);
             }
         });
     },
@@ -1898,6 +1907,10 @@ Sistema.Pedido = {
                     }
 
                     //Sistema.Pedido.Load(false);
+                },
+                error: function (error) {
+                    console.log(error);
+                    Swal.fire("Alerta", error, "error");
                 }
             });
         } else {
@@ -1914,6 +1927,10 @@ Sistema.Pedido = {
                     //    Swal.fire("Atenção!", result.Data[0].mensagemRetorno, "error");
                     //    return false;
                     //}
+
+                    if (!result.Success) {
+                        Swal.fire("Alerta", result.Message, "error");
+                    }
 
                     if (result.Data[0].retorno == "OK") {
 
@@ -1943,6 +1960,10 @@ Sistema.Pedido = {
 
                         return false;
                     }
+                },
+                error: function (error) {
+                    console.log(error);
+                    Swal.fire("Alerta", error, "error");
                 }
             });
         }
@@ -2189,6 +2210,16 @@ Sistema.Pedido = {
         Sistema.Pedido.Load(false);
     },
 
+    RemoverDesconto: function () {
+        $('#txtVlrDesconto').val("0,00");
+        Sistema.Pedido.RecalcularItensPedido(true, true);
+    },
+
+    RemoverAcrescimo: function () {
+        $('#txtVlrArredondamento').val("0,00");
+        Sistema.Pedido.RecalcularItensPedido(true, true);
+    },
+
     RecalcularItensPedido: function (validaDesconto, updatePedido) {
         var condicaoEspecial = $('#condicao_pagamento_Especial').val();
         var condicaoPgtoTipoCalculo = $('#condicao_pagamento_tipo_calculo').val();
@@ -2236,6 +2267,7 @@ Sistema.Pedido = {
         var dataIniJur = $('#condicao_pagamento_ini_jur').val() != "" ? $('#condicao_pagamento_ini_jur').val() : dataEmissao;
         var codDerivacao = null;
         var codRep = $('#txtCodRepresentante').val();
+        var vlrLiquido = $('#text_valor_total_liquido').val().replace(',', '.');
 
         $.ajax({
             url: '/Pedido/RecalculaItens',
@@ -2257,6 +2289,7 @@ Sistema.Pedido = {
                 'codRepresentante': codRep,
                 'vlrDescontoTotal': desconto,
                 'vlrArredondamento': arredondamento,
+                'vlrLiquido': vlrLiquido
             },
             success: function (result) {
                 if (result.Data != undefined && result.Data.Error != undefined && result.Data.Error == true) {
@@ -3128,7 +3161,7 @@ function RecalcularTodasParcelas(updatePedido) {
     if (item.value == 'C')
         frete = SapiensJS.Util.converteMoedaFloat($('#vlrFrete').val());
 
-    if (tipoCondicaoPagamento == "S") {
+    if (tipoCondicaoPagamento == "S" || (tipoCondicaoPagamento == "N" && $('#txtVlrDesconto').val() != null)) {
         if (rowCountItens > 0 && rowCountParcelas > 0) {
 
             //lpPedido.Show();

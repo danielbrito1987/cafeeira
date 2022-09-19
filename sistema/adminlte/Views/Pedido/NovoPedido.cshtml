@@ -322,12 +322,24 @@
                                     <input type="text" class="form-control" id="lblVlrLiquido" name="lblVlrLiquido" value="0,00" disabled />
                                 </div>
                                 <div class="col-md-3">
-                                    <p>Arredondamento:</p>
-                                    <input type="text" class="form-control" id="txtVlrArredondamento" name="txtVlrArredondamento" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.RecalcularItensPedido()" />
+                                    <p>Acréscimo:</p>
+                                    <div class="input-group">
+                                        <input type="text" id="txtVlrArredondamento" name="txtVlrArredondamento" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.RecalcularItensPedido()" class="form-control" tabindex="1">
+                                        <div class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.RemoverAcrescimo()">X</button>
+                                        </div>
+                                    </div>
+                                    @*<input type="text" class="form-control" id="txtVlrArredondamento" name="txtVlrArredondamento" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.RecalcularItensPedido()" />*@
                                 </div>
                                 <div class="col-md-3">
                                     <p>Desconto:</p>
-                                    <input type="text" class="form-control" id="txtVlrDesconto" name="txtVlrDesconto" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.ValidaDescontoGeral()" />
+                                    <div class="input-group">
+                                        <input type="text" id="txtVlrDesconto" name="txtVlrDesconto" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.ValidaDescontoGeral()" class="form-control" tabindex="1">
+                                        <div class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="Sistema.Pedido.RemoverDesconto()">X</button>
+                                        </div>
+                                    </div>
+                                    @*<input type="text" class="form-control" id="txtVlrDesconto" name="txtVlrDesconto" value="0,00" onkeypress="return(moeda2(this,'.',',',event))" onchange="Sistema.Pedido.ValidaDescontoGeral()" />*@
                                 </div>
                             </div>
                         </div>
@@ -948,5 +960,9 @@
         if (e.keyCode == 13) {
             Enter();
         }
+    });
+
+    $("#txtVlrDesconto").on("change", function () {
+        Sistema.Pedido.ValidaDescontoGeral();
     });
 </script>

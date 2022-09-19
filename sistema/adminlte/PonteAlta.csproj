@@ -4527,7 +4527,9 @@
     <Content Include="Scripts\Pedido\Pedido\pedido.js" />
     <Content Include="Scripts\Pedido\Pedido\relatorio.js" />
     <Content Include="Scripts\UtilJS.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
