@@ -189,6 +189,7 @@ namespace adminlte.Controllers
             int codEmpFiltroPadrao = Convert.ToInt32(Session["empAti"]);
             int codFilialFiltroPadrao = Convert.ToInt32(Session["filAti"]);
             double totalLiquido = 0;
+            double totalDesconto = 0;
 
             if (codigoPedido <= 0)
                 throw new Exception("Não foi possível localizar o código de referência.");
@@ -294,6 +295,15 @@ namespace adminlte.Controllers
                     listaParcelas = TempData["listaParcela"] as List<Parcela>;
 
                 var l = resultado.FirstOrDefault();
+
+
+                var item = UnidadeTrabalho.ObterTodos<PedidoItem>().Where(x => x.Empresa == codEmpFiltroPadrao && x.Filial == codFilialFiltroPadrao && x.Pedido.Codigo == l.Codigo).OrderBy(x => x.Sequencia);
+
+                if (item != null && item.Count() > 0)
+                {
+                    l.PercentualDesconto = item.FirstOrDefault().PercentualOferta;
+                }
+
                 var resultadoPedido = new
                 {
                     Codigo = (l.Codigo > 0) ? l.Codigo : 0,
@@ -346,10 +356,11 @@ namespace adminlte.Controllers
                     RepresentanteNome = l.NomeRepresentante.ToString(),
                     RepresentanteCodigo = l.CodRepresentante.ToString(),
 
-                    ValorBruto = l.ValorBruto,
-                    ValorDesconto = l.ValorDesconto,
-                    ValorAcrescimo = l.ValorAcrescimo,
-                    ValorLiquido = l.ValorLiquido,
+                    l.ValorBruto,
+                    l.ValorDesconto,
+                    l.PercentualDesconto,
+                    l.ValorAcrescimo,
+                    l.ValorLiquido,
                     //QtdSac = (l.QTDSAC > 0) ? Convert.ToDouble(l.QTDSAC).ToString("N2") : "",
                     //TabelaCPR = (l.CODCPR != null) ? l.CODCPR.ToString() : "",
                     PodeAlterar = (l.PodeAlterar != null) ? l.PodeAlterar.ToString() : "",
@@ -969,7 +980,22 @@ namespace adminlte.Controllers
 
         }
 
-        public ActionResult RecalculaItens(string tipoCalculo, string tipo_especial, string taxa_juros, string total_parcelas, string agComercial = null, string agEstoque = null, string codTabela = null, string dataEmissao = null, string condPgto = null, string codCli = null, string transProd = null, string codDerivacao = null, string dataIniJur = null, string codRepresentante = null, double vlrDescontoTotal = 0, double vlrArredondamento = 0, double vlrLiquido = 0)
+        public ActionResult RemoverOferta()
+        {
+            TempData.Keep();
+
+            var listItemPedido = TempData["listItemPedido"] as List<PedidoItem>;
+
+            foreach (PedidoItem item in listItemPedido)
+            {
+                item.PercentualOferta = 0;
+            }
+
+            TempData["listItemPedido"] = listItemPedido;
+            return Json(listItemPedido);
+        }
+
+        public ActionResult RecalculaItens(string tipoCalculo, string tipo_especial, string taxa_juros, string total_parcelas, string agComercial = null, string agEstoque = null, string codTabela = null, string dataEmissao = null, string condPgto = null, string codCli = null, string transProd = null, string codDerivacao = null, string dataIniJur = null, string codRepresentante = null, double vlrDescontoTotal = 0, double vlrArredondamento = 0, double vlrLiquido = 0, bool removerAcrescimo = false)
         {
             TempData.Keep();
 
@@ -1013,14 +1039,29 @@ namespace adminlte.Controllers
 
                         foreach (PedidoItem itemPedido in listItemPedido)
                         {
-                            var percentual = vlrLiquido > 0 ? (vlrDescontoTotal * 100) / vlrLiquido : 0;
+                            var percentual = vlrLiquido > 0 ? (vlrLiquido * vlrDescontoTotal) / 100 : 0;
                             var percentAcrescimo = vlrLiquido > 0 ? (vlrArredondamento * 100) / vlrLiquido : 0;
                             var valorLiquidoItem = itemPedido.PrecoUnitario * itemPedido.QuantidadePedido;
 
-                            itemPedido.ValorDescontoUsuario = percentual > 0 ? valorLiquidoItem * (percentual / 100) : 0;
-                            itemPedido.ValorAcrescimoUsuario = percentAcrescimo > 0 ? valorLiquidoItem * (percentAcrescimo / 100) : 0;
+                            //percentAcrescimo = Math.Round(percentAcrescimo, 2, MidpointRounding.AwayFromZero);
 
-                            if(itemPedido.ValorDescontoUsuario > 0)
+                            //itemPedido.PercentualDescontoUsuario = percentual;
+                            itemPedido.PercentualAcrescimoUsuario = percentAcrescimo;
+                            itemPedido.ValorDescontoUsuario = Math.Round(valorLiquidoItem * (itemPedido.PercentualDescontoUsuario / 100), 2, MidpointRounding.AwayFromZero);
+
+                            if (removerAcrescimo)
+                            {
+                                itemPedido.ValorAcrescimoUsuario = 0;
+                                itemPedido.ValorAcrescimoUsuario = valorLiquidoItem * (percentAcrescimo / 100);
+                            }
+                            else
+                            {
+                                itemPedido.ValorAcrescimoUsuario = itemPedido.ValorAcrescimoUsuario + (valorLiquidoItem * (percentAcrescimo / 100));
+                            }
+
+                            itemPedido.PercentualOferta = percentual > 0 ? Math.Round(vlrDescontoTotal, 5, MidpointRounding.AwayFromZero) : 0;
+
+                            if (itemPedido.ValorDescontoUsuario > 0)
                             {
                                 string hora = "";
                                 string minutos = "";
@@ -1266,22 +1307,6 @@ namespace adminlte.Controllers
             TempData["listItemPedido"] = itens;
 
             return Json(resultado.ToList());
-            //Dictionary<String, Object> parameters = new Dictionary<String, Object>();
-            //int codEmpFiltroPadrao = Convert.ToInt32(Session["empAti"]);
-            //int codFilialFiltroPadrao = Convert.ToInt32(Session["filAti"]);
-
-            //parameters.Add("codEmpresa", codEmpFiltroPadrao);
-            //parameters.Add("codFilial", codFilialFiltroPadrao);
-            //parameters.Add("codPedido", codPedido);
-
-            //var resultado = UnidadeTrabalho.ExecuteSql<ItensPedido>(@"SELECT * FROM TABLE(FUNC_PEDIDO_ITENS(:codEmpresa, :codFilial, :codPedido))", parameters).ToList();
-            ////var resultado = UnidadeTrabalho.ObterTodos<PedidoItem>().Where(x => x.Empresa.Codigo == codEmpFiltroPadrao && x.Filial.Codigo == codFilialFiltroPadrao && x.Pedido.Codigo == codPedido).OrderBy(x => x.Sequencia);
-
-            //var lista = ConverterParaPedidoItem(resultado.ToList());
-
-            //TempData["listItemPedido"] = lista;
-
-            //return PartialView("EditingForm", lista);
         }
 
         public ActionResult IncluirPedido(string pedidoPost = null, bool isJson = false, string parcelasValidas = null)
@@ -1338,7 +1363,6 @@ namespace adminlte.Controllers
 
             pedidoNovo.cifFob = pedido.CIFFOB;
             pedidoNovo.codCli = pedido.CodCliente.ToString();
-            //pedidoNovo.codCon = pedido.CodigoConvenio;
             pedidoNovo.codCpg = pedido.CodCondicaoPagamento.ToString();
             pedidoNovo.codEmp = (codEmpFiltroPadrao > 0) ? codEmpFiltroPadrao.ToString() : "";
             pedidoNovo.codFil = (codFilialFiltroPadrao > 0) ? codFilialFiltroPadrao.ToString() : "";
@@ -1359,7 +1383,7 @@ namespace adminlte.Controllers
             pedidoNovo.tnsPro = pedido.CodTransacao.ToString();
             pedidoNovo.vlrFre = PreparaValor(pedido.ValorFrete.ToString());
             pedidoNovo.vlrLiq = PreparaValor(pedido.ValorLiquido.ToString());
-
+            
             //preparando avalistas
             //criando a lista de avalistas
             List<GravarPedido.pedidosvendaGravarPedidoInPedidoAvalistas> listAvalistas = new List<GravarPedido.pedidosvendaGravarPedidoInPedidoAvalistas>();
@@ -1410,6 +1434,7 @@ namespace adminlte.Controllers
                 itemPedidoNovo.perDsc = (item.PercentualDescontoUsuario > 0) ? PreparaValor(item.PercentualDescontoUsuario.ToString()) : "0";
                 itemPedidoNovo.codDer = (item.CodigoDerivacao != null) ? item.CodigoDerivacao.ToString() : " ";
                 itemPedidoNovo.vlrFre = (item.ValorFrete > 0) ? PreparaValor(item.ValorFrete.ToString()) : "0";
+                itemPedidoNovo.perOfe = item.PercentualOferta > 0 ? PreparaValor(item.PercentualOferta.ToString()) : "0";
 
                 double totalLiquido = Math.Round((item.PrecoUnitario * item.QuantidadePedido), 2);
 
@@ -1446,9 +1471,6 @@ namespace adminlte.Controllers
 
             if (listaParcelas != null && listaParcelas.Count > 0)
             {
-                //Método utilizado para organizar as parcelas por sequência e data. Também faz o ajustes de centavos.
-                //OrganizarParcelas();
-
                 foreach (var parcelaItem in listaParcelas)
                 {
                     totalParcelas += Math.Round(parcelaItem.ValorParcela, 2);
@@ -1457,7 +1479,7 @@ namespace adminlte.Controllers
                     parcela.opeExe = "I"; //"A" para Alterar, "I" para Inserir, "C" para Carregar,  "E" para excluir
                     parcela.perPar = (parcelaItem.Percentual > 0) ? PreparaValor(parcelaItem.Percentual.ToString()) : "0";
                     parcela.seqPar = parcelaItem.SequenciaParcela.ToString();
-                    parcela.vlrPar = (parcelaItem.ValorParcela > 0) ? PreparaValor(parcelaItem.ValorParcela.ToString()) : "0";
+                    parcela.vlrPar = (parcelaItem.ValorParcela > 0) ? PreparaValor(parcelaItem.ValorParcela.ToString("N2")) : "0";
                     parcela.vctPar = parcelaItem.DataVencimento;
 
                     //inserindo na lista a parcela
@@ -1505,53 +1527,24 @@ namespace adminlte.Controllers
             TempData.Keep("listaParcela");
             TempData.Keep("listaAvalista");
 
+            double valorParcelas = 0;
             var listItemPedido = TempData["listItemPedido"] as List<PedidoItem>;
-            //var listaPostParcelas = TempData["listaParcela"] as List<Parcela>;
             var listaPostAvalistas = TempData["listaAvalista"] as List<GrupoEmpresa>;
 
             Pedido pedido = new JavaScriptSerializer().Deserialize<Pedido>(pedidoPost);
-            //int hora = pedido.HoraEmissao;
+
             string usuarioLogado = Session["usuarioLogado"].ToString();
             string senhaUsuarioLogado = Session["senhaUsuLogado"].ToString();
 
             CondicaoPagamento condPgto = UnidadeTrabalho.ObterTodos<CondicaoPagamento>().Where(x => x.Codigo == pedido.CodCondicaoPagamento && x.FormaPagamento.Codigo == pedido.CodFormaPagamento.ToString()).FirstOrDefault();
 
-            //CondicaoPagamentoProc condPgto = ObterCondPagamento(pedido.CondicaoPagamento.Codigo, pedido.FormaPagamento.Codigo.ToString(), false, pedido.CodigoConvenio);
-            //ConsultaParcelasCondPgto condicaoPgto = ObterObjetoParcelasTipoCPR(condPgto.CODCPG, pedido.CodigoConvenio, pedido.DataEmissao.ToShortDateString(), condPgto.CPGCPR, pedido.CodigoTPR);
-
-            //ValidaPedido validaPedido = ValidarPedido(pedido.Codigo, pedido.CodGrupoEmpresa, pedido.CodCliente, pedido.CodRepresentante, pedido.Transacao.Codigo, pedido.CodFormaPgto, condPgto.CODCPG, pedido.CodigoTPR, Convert.ToDouble(pedido.QtdSaca), pedido.ValorLiquido);
-
-            //if (validaPedido != null && validaPedido.BLOITE == "S")
-            //    throw new CoreException(validaPedido.BLOMSG);
-
-            //pedido.CondicaoPagamento.Abreviacao = condPgto.ABRCPG;
             pedido.CodCondicaoPagamento = condPgto.Codigo;
-            //pedido.CondicaoPagamento.CodigoCampanha = condPgto.CODCAM.ToString();
-            //pedido.CondicaoPagamento.Descricao = condPgto.DESCPG;
-            //pedido.CondicaoPagamento.Empresa.Codigo = Convert.ToInt32(condPgto.CODEMP);
-            //pedido.CondicaoPagamento.Filial.Codigo = Convert.ToInt32(condPgto.CODFIL);
-            //pedido.CondicaoPagamento.Fonte = condPgto.FONTE;
-            //pedido.CondicaoPagamento.FormaPagamento.Codigo = Convert.ToInt32(condPgto.CODFPG);
-            //pedido.CondicaoPagamento.FormaPagamento.Descricao = condPgto.DESFPG;
-            //pedido.DataIniJuros = condPgto.INIJUR;
-            //pedido.CondicaoPagamento.ManutencaoParcela = condPgto.MANPAR;
-            //pedido.CondicaoPagamento.PodSel = condPgto.PODSEL;
-            //pedido.CondicaoPagamento.QuantidadeParcelas = Convert.ToInt32(condPgto.QTDPAR);
             pedido.AcrFin = Convert.ToDouble(condPgto.TaxaAcrescimoFinanceiro);
 
             if (condPgto.TipoEspecial != "I")
                 pedido.TaxaJuros = Convert.ToDouble(condPgto.TaxaJuros);
             else
                 pedido.TaxaJuros = Convert.ToDouble(condPgto.TaxaAcrescimoFinanceiro);
-
-            //pedido.CondicaoPagamento.TipoCalculo = condPgto.FORCAL;
-            //pedido.CondicaoPagamento.TipoCPR = condPgto.CPGCPR;
-            //pedido.CondicaoPagamento.TipoEspecial = condPgto.CPGESP;
-            //pedido.CondicaoPagamento.TipoJuros = condPgto.TIPJUR;
-            //pedido.CondicaoPagamento.TipoParcela = Convert.ToInt32(condPgto.TIPPAR);
-            //pedido.CondicaoPagamento.VlrDis = Convert.ToDouble(condPgto.VLRDIS);
-            //pedido.CondicaoPagamento.VlrMet = Convert.ToDouble(condPgto.VLRMET);
-            //pedido.CondicaoPagamento.VlrVen = Convert.ToDouble(condPgto.VLRVEN);
 
             if (pedido == null)
                 throw new Exception("Não foi possível localizar o pedido a ser enviado, favor verificar.");
@@ -1577,9 +1570,6 @@ namespace adminlte.Controllers
 
                 throw new Exception("Não foi possível localizar o código do pedido para alteração.");
             }
-
-            //if ((pedido.CondicaoPagamento.TipoCPR == "T" || pedido.CondicaoPagamento.TipoCPR == "I") && (pedido.CodigoTPR == string.Empty || pedido.CodigoTPR == null))
-            //    throw new Exception("Selecione uma Tabela CPR.");
 
             pedido.DataIniJuros = Convert.ToDateTime(pedido.DataIniJuros.ToString("dd/MM/yyyy"));
 
@@ -1627,7 +1617,6 @@ namespace adminlte.Controllers
             pedidoNovo.numPed = pedido.Codigo.ToString();
             pedidoNovo.cifFob = pedido.CIFFOB;
             pedidoNovo.codCli = pedido.CodCliente.ToString();
-            //pedidoNovo.codCon = pedido.CodigoConvenio;
             pedidoNovo.codCpg = pedido.CodCondicaoPagamento.ToString();
             pedidoNovo.codEmp = codEmpFiltroPadrao.ToString();
             pedidoNovo.codFil = codFilialFiltroPadrao.ToString();
@@ -1636,14 +1625,11 @@ namespace adminlte.Controllers
             pedidoNovo.codRep = pedido.CodRepresentante.ToString();
             pedidoNovo.codTra = pedido.CodigoTransportadora != null ? pedido.CodigoTransportadora.ToString() : "";
             pedidoNovo.datEmi = pedido.DataEmissao != null ? pedido.DataEmissao.ToString("dd/MM/yyyy") : "";
-            //pedidoNovo.horEmi = TimeSpan.Parse(hora.ToString()).TotalMinutes.ToString();
             pedidoNovo.fecPed = "S"; //nao sei
             pedidoNovo.USU_ObsPed = pedido.ObsPedido;
             pedidoNovo.USU_ObsEnt = pedido.ObsEntrega;
-            //pedidoNovo.USU_QtdSac = (pedido.QtdSaca != null) ? pedido.QtdSaca.ToString() : "";
             pedidoNovo.plaVei = pedido.NomePlaca;
             pedidoNovo.temPar = (condPgto != null && condPgto.TipoEspecial != null) ? condPgto.ManutencaoParcela.ToString() : "";
-            //pedidoNovo.USU_CodCpr = (pedido.TabelaCPR != null) ? pedido.TabelaCPR.ToString() : "";
             pedidoNovo.tnsPro = pedido.CodTransacao.ToString();
             pedidoNovo.vlrFre = PreparaValor(pedido.ValorFrete.ToString());
             pedidoNovo.vlrLiq = PreparaValor(pedido.ValorLiquido.ToString());
@@ -1654,33 +1640,9 @@ namespace adminlte.Controllers
             //preparando parcelas
             //criando a lista
             List<GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas> listaParcelas = new List<GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas>();
-
+            
             var listaPostParcelas = TempData["listaParcela"] as List<Parcela>;
             listaPostParcelas = listaPostParcelas.OrderBy(x => x.SequenciaParcela).ToList();
-
-            if (listaPostParcelas != null && listaPostParcelas.Count > 0)
-            {
-                //Método utilizado para organizar as parcelas por sequência e data
-                //OrganizarParcelas();
-
-                double aux = 0;
-                foreach (var parcelaItem in listaPostParcelas)
-                {
-                    GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas parcela = new GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas();
-
-                    parcela.opeExe = "I";
-                    parcela.perPar = (parcelaItem.Percentual > 0) ? PreparaValor(parcelaItem.Percentual.ToString()) : "0";
-                    parcela.seqPar = parcelaItem.SequenciaParcela.ToString();
-                    parcela.vlrPar = (parcelaItem.ValorParcela > 0) ? PreparaValor(parcelaItem.ValorParcela.ToString()) : "0";
-                    parcela.vctPar = parcelaItem.DataVencimento.Split(' ')[0];
-                    aux += parcelaItem.ValorParcela;
-                    //inserindo na lista a parcela
-                    listaParcelas.Add(parcela);
-                }
-
-                //if (pedido.ValorLiquido.ToString("N2") != aux.ToString("N2"))
-                //    throw new CoreException("O valor total das parcelas está diferente do valor Total do pedido.");
-            }
 
             //preparando avalistas
             //criando a lista
@@ -1705,6 +1667,7 @@ namespace adminlte.Controllers
             List<GravarPedido.pedidosvendaGravarPedidoInPedidoProduto> itensPedido = new List<GravarPedido.pedidosvendaGravarPedidoInPedidoProduto>();
 
             int seqProd = 0;
+            double totalLiquidoPedido = 0; //Variável criada para calcular o total líquido do pedido
 
             foreach (var item in listItemPedido)
             {
@@ -1727,7 +1690,6 @@ namespace adminlte.Controllers
                 }
 
                 itemPedidoNovo.datEnt = item.DataEntrega.Split(' ')[0];
-                //itemPedidoNovo.seqIpd = item.Sequencia.ToString();
                 itemPedidoNovo.seqIpd = seqProd.ToString();
                 itemPedidoNovo.qtdPed = (item.QuantidadePedido > 0) ? item.QuantidadePedido.ToString() : "0";
                 itemPedidoNovo.preUni = (item.PrecoUnitario > 0) ? PreparaValor(item.PrecoUnitario.ToString("N5")) : "0";
@@ -1737,10 +1699,15 @@ namespace adminlte.Controllers
                 itemPedidoNovo.perAcr = (item.PercentualAcrescimoUsuario > 0) ? PreparaValor(item.PercentualAcrescimoUsuario.ToString()) : "0";
                 itemPedidoNovo.perDsc = (item.PercentualDescontoUsuario > 0) ? PreparaValor(item.PercentualDescontoUsuario.ToString()) : "0";
                 itemPedidoNovo.codDer = (item.CodigoDerivacao != null) ? item.CodigoDerivacao.ToString() : " ";
-                itemPedidoNovo.vlrLiq = (string.IsNullOrEmpty(item.ValorLiquido.ToString("N2")) ? "0" : PreparaValor(item.ValorLiquido.ToString("N2")));
-                itemPedidoNovo.USU_PreBas = (item.PrecoBase > 0) ? PreparaValor(item.PrecoBase.ToString()) : "0";
                 itemPedidoNovo.vlrFre = (item.ValorFrete > 0) ? PreparaValor(item.ValorFrete.ToString()) : "0";
+                itemPedidoNovo.perOfe = item.PercentualOferta > 0 ? PreparaValor(item.PercentualOferta.ToString()) : "0";
+
+                double totalLiquido = Math.Round((item.PrecoUnitario * item.QuantidadePedido), 2);
+                itemPedidoNovo.vlrLiq = (string.IsNullOrEmpty(item.ValorLiquido.ToString())) ? "0" : PreparaValor(Math.Round(item.ValorLiquido, 2, MidpointRounding.AwayFromZero).ToString());
+                itemPedidoNovo.USU_PreBas = (item.PrecoBase > 0) ? PreparaValor(item.PrecoBase.ToString()) : "0";
                 itemPedidoNovo.codDep = item.CodigoDep;
+
+                totalLiquidoPedido += item.ValorLiquido;
 
                 double percentual = 0.00;
                 bool valorValido = double.TryParse(item.PercentualDescontoUsuario.ToString(), out percentual);
@@ -1748,14 +1715,9 @@ namespace adminlte.Controllers
                 //se foi preenchido algum desconto para o item é obriatorio preencher os dados de data, horario e o usuario
                 if (valorValido && percentual > 0)
                 {
-                    //itemPedidoNovo.USU_DatDsc = DateTime.Today.ToString("dd/MM/yyyy");
-                    //itemPedidoNovo.USU_HorDsc = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString();
-                    //itemPedidoNovo.USU_UsuDsc = codUsuarioLogado.ToString();
-
                     itemPedidoNovo.USU_DatDsc = item.DataDesconto;
                     itemPedidoNovo.USU_HorDsc = TimeSpan.Parse(item.HoraDesconto).TotalMinutes.ToString();
                     itemPedidoNovo.USU_UsuDsc = item.UsuarioDesconto;
-
                 }
                 else
                 {
@@ -1766,6 +1728,52 @@ namespace adminlte.Controllers
 
                 //inserindo na lista de itens do pedido novo
                 itensPedido.Add(itemPedidoNovo);
+            }
+
+            //Trecho de código responsável por calcular diferença entre total do pedido e total de parcelas
+            double diff = 0;
+            valorParcelas = listaPostParcelas.Sum(x => Math.Round(x.ValorParcela, 3, MidpointRounding.AwayFromZero));
+            totalLiquidoPedido = Math.Round(totalLiquidoPedido, 2);
+
+            if (totalLiquidoPedido > valorParcelas)
+                diff = totalLiquidoPedido - valorParcelas;
+            else
+                diff = valorParcelas - totalLiquidoPedido;
+
+            diff = Math.Round(diff, 2);
+
+            //Caso tenha diferença de valor, a diferença é somada ou subtraída da primeira parcela
+            if(diff > 0)
+            {
+                foreach (var item in listaPostParcelas)
+                {
+                    if (item.SequenciaParcela == (listaPostParcelas.Count))
+                    {
+                        if (totalLiquidoPedido < valorParcelas)
+                            item.ValorParcela = item.ValorParcela - diff;
+                        else
+                            item.ValorParcela = item.ValorParcela + diff;
+                    }
+                }
+
+                TempData["listaParcela"] = listaPostParcelas;
+            }
+
+            if (listaPostParcelas != null && listaPostParcelas.Count > 0)
+            {
+                foreach (var parcelaItem in listaPostParcelas)
+                {
+                    GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas parcela = new GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas();
+
+                    parcela.opeExe = "I";
+                    parcela.perPar = (parcelaItem.Percentual > 0) ? PreparaValor(parcelaItem.Percentual.ToString()) : "0";
+                    parcela.seqPar = parcelaItem.SequenciaParcela.ToString();
+                    parcela.vlrPar = (parcelaItem.ValorParcela > 0) ? PreparaValor(parcelaItem.ValorParcela.ToString("N2")) : "0";
+                    parcela.vctPar = parcelaItem.DataVencimento.Split(' ')[0];
+
+                    //inserindo na lista a parcela
+                    listaParcelas.Add(parcela);
+                }
             }
 
             //inserindo a lista de itens no pedido novo um array dentro do outro;
@@ -1821,15 +1829,6 @@ namespace adminlte.Controllers
                 throw new Exception("Não foi possível localizar a empresa do pedido.");
 
             var pedidoSelecionado = UnidadeTrabalho.ObterTodos<Pedido>().Where(x => x.CodEmpresa == codEmpresa && x.CodFilial == codFilial && x.Codigo == codPedido).FirstOrDefault();
-            //Dictionary<String, Object> parameters = new Dictionary<String, Object>();
-
-            //parameters.Add("codEmpresa", codEmpresa);
-            //parameters.Add("codFilial", codFilial);
-            //parameters.Add("codPedido", codPedido);
-
-            //var resultadoPedido = UnidadeTrabalho.ExecuteSql<ConsultaPedido>(@"SELECT * FROM TABLE(FUNC_PEDIDO_DGERAIS(:codEmpresa, :codFilial, :codPedido))", parameters).FirstOrDefault();
-
-            //Pedido pedidoSelecionado = ConverterParaPedido(resultadoPedido);
 
             if (pedidoSelecionado == null)
                 throw new Exception("Não foi possível localizar o pedido a ser enviado, favor verificar.");
@@ -1838,33 +1837,12 @@ namespace adminlte.Controllers
                 throw new Exception("Operação não permitida devido a situação do pedido.");
 
             CondicaoPagamento condicao = UnidadeTrabalho.ObterTodos<CondicaoPagamento>().Where(x => x.Codigo == pedidoSelecionado.CodCondicaoPagamento).FirstOrDefault();
-            //CondicaoPagamentoProc condicao = ObterCondPagamento(pedidoSelecionado.CodCondicacaoPagamento, pedidoSelecionado.CodFormaPgto.ToString(), false, pedidoSelecionado.CodigoConvenio);
-            //ConsultaParcelasCondPgto condicaoPgto = ObterObjetoParcelasTipoCPR(condicao.CODCPG, pedidoSelecionado.CodigoConvenio, pedidoSelecionado.DataEmissao.ToShortDateString(), condicao.CPGCPR, pedidoSelecionado.CodigoTPR);
-
+            
             if (condicao == null)
                 msgRetornoCondPgto = "Não foi possível localizar a condição de pagamento " + condicao.Codigo + ".";
 
-            //pedidoSelecionado.CondicaoPagamento = new CondicaoPagamento();
-
-            //pedidoSelecionado.CondicaoPagamento.Abreviacao = condicao.ABRCPG;
             pedidoSelecionado.CodCondicaoPagamento = condicao.Codigo;
-            //pedidoSelecionado.CondicaoPagamento.CodigoCampanha = condicao.CODCAM.ToString();
             pedidoSelecionado.DescCondicaoPagamento = condicao.Descricao;
-            //pedido.CondicaoPagamento.Empresa.Codigo = Convert.ToInt32(condPgto.CODEMP);
-            //pedido.CondicaoPagamento.Filial.Codigo = Convert.ToInt32(condPgto.CODFIL);
-            //pedidoSelecionado.CondicaoPagamento.Fonte = condicao.FONTE;
-            //pedido.CondicaoPagamento.FormaPagamento.Codigo = Convert.ToInt32(condPgto.CODFPG);
-            //pedido.CondicaoPagamento.FormaPagamento.Descricao = condPgto.DESFPG;
-            //pedidoSelecionado.DataIniJuros = condicao.INIJUR;
-            //pedidoSelecionado.CondicaoPagamento.ManutencaoParcela = condicao.MANPAR;
-            //pedidoSelecionado.CondicaoPagamento.PodSel = condicao.PODSEL;
-            //pedidoSelecionado.CondicaoPagamento.QuantidadeParcelas = Convert.ToInt32(condicao.QTDPAR);
-            //pedidoSelecionado.CondicaoPagamento.TaxaAcrescimoFinanceiro = Convert.ToDouble(condicao.ACRFIN);
-
-            //if (condicao.CPGCPR == "I")
-            //    pedidoSelecionado.CondicaoPagamento.TaxaJuros = Convert.ToDouble(condicaoPgto.TXAFIN);
-            //else
-            //    pedidoSelecionado.CondicaoPagamento.TaxaJuros = Convert.ToDouble(condicao.TXAJUR);
             pedidoSelecionado.TaxaJuros = Convert.ToDouble(condicao.TaxaJuros);
             pedidoSelecionado.AcrFin = Convert.ToDouble(condicao.TaxaAcrescimoFinanceiro);
 
@@ -1875,9 +1853,6 @@ namespace adminlte.Controllers
             {
                 pedido.SituacaoPedido = 9;
                 TempData["Pedido"] = pedido;
-
-                //if (pedido.ValorFrete == 0)
-                //    HabilitarFreteParaTodosItens();
             }
 
             return Json(resultado.respostaPedido.Select(l => new
@@ -1890,10 +1865,7 @@ namespace adminlte.Controllers
                 situacaoPedido = RetornaSituacaoPedido(Convert.ToInt32(l.sitPed)),
                 CodCondicaoPagamento = condicao != null ? condicao.Codigo : pedidoSelecionado.CodCondicaoPagamento,
                 DescCondicaoPagamento = condicao != null ? condicao.Descricao : pedidoSelecionado.DescCondicaoPagamento,
-                //CondicaoPagamentoTipoCPR = (condicao != null && condicao.CPGCPR != null) ? condicao.CPGCPR : "N",
                 CondicaoPagamentoEspecial = (condicao != null && condicao.TipoEspecial != null) ? condicao.TipoEspecial : "N",
-                //TabelaCPR = pedidoSelecionado.CodigoTPR,
-                //DescTabelaCPR = pedidoSelecionado.NomeTPR,
                 QtdParcelas = condicao != null ? condicao.QuantidadeParcelas : 0,
                 ManutencaoParcelas = condicao != null ? condicao.ManutencaoParcela : "N",
                 TaxaJuros = PreparaValor(pedidoSelecionado.TaxaJuros.ToString())
@@ -1923,10 +1895,6 @@ namespace adminlte.Controllers
             pedidoNovo.codUsu = codUsuarioLogado.ToString();
             pedidoNovo.USU_TxaJur = taxaJuros;
             pedidoNovo.USU_AcrFin = acrFin;
-            //pedidoNovo.USU_IniJur = iniJur;
-            //pedidoNovo.parcelas = TempData["listaParcelas"] as GravarPedido.pedidosvendaGravarPedidoInPedidoParcelas[];
-            //pedidoNovo.avalistas = TempData["listaAvalista"] as GravarPedido.pedidosvendaGravarPedidoInPedidoAvalistas[];
-            //pedidoNovo.produto = TempData["listItemPedido"] as GravarPedido.pedidosvendaGravarPedidoInPedidoProduto[];
 
             //criando uma lista para inserido o pedido
             List<GravarPedido.pedidosvendaGravarPedidoInPedido> pedidoLista = new List<GravarPedido.pedidosvendaGravarPedidoInPedido>();
@@ -2004,7 +1972,6 @@ namespace adminlte.Controllers
             pedidoNovo.horEmi = horaEmissao.ToString();
             pedidoNovo.USU_TxaJur = taxaJuros;
             pedidoNovo.USU_AcrFin = acrFin;
-            //pedidoNovo.USU_IniJur = iniJur;
 
             pedidoNovo.codUsu = codUsuarioLogado.ToString();
 
@@ -2085,7 +2052,6 @@ namespace adminlte.Controllers
             if (itemNovo != null && itemNovo.PrecoBase > 0 && itemNovo.codTabela != "")
             {
                 itemPedido.CodigoTRP = itemNovo.codTabela != null ? itemNovo.codTabela : itemPedido.CodigoTRP;
-                //itemPedido.PrecoBase = Math.Round(itemNovo.PrecoBase, 2);
                 itemPedido.PrecoBase = itemNovo.PrecoBase;
 
                 if (tipoCalculo == "Base")
@@ -2096,14 +2062,12 @@ namespace adminlte.Controllers
                 double totalPrecoUnitario = 0;
                 double totalLiquidoCalculado = 0;
                 double rateioFrete = 0;
-                //double PercentualProduto = 0;
 
                 if (tipoCalculo == "Base")
                     precoUnitario = itemPedido.PrecoBase;
                 else
                     precoUnitario = itemPedido.PrecoUnitario;
-
-                //var totalJurosCalculado = itemPedido.PrecoBase * taxaJurosNormal;
+                
                 if (somaFrete > 0)
                 {
                     rateioFrete = ((itemPedido.ValorFrete * 100) / somaFrete);
@@ -2117,8 +2081,6 @@ namespace adminlte.Controllers
 
                     foreach (var itemParcela in listaParcela)
                     {
-                        //TaxaJurosCalculada += CalcularJuros((itemPedido.PrecoBase + itemPedido.ValorFrete), precoUnitario, itemParcela.Percentual, tipo_especial, iniJur,
-                        //    itemParcela.DataVencimento, tipoCalculo, itemPedido.ValorLiquido.ToString(), taxa_juros);
                         TaxaJurosCalculada += CalcularJuros((itemPedido.PrecoBase), precoUnitario, itemParcela.Percentual, tipo_especial, iniJur,
                             Convert.ToDateTime(itemParcela.DataVencimento), tipoCalculo, itemPedido.ValorLiquido.ToString(), taxa_juros);
 
@@ -2134,41 +2096,22 @@ namespace adminlte.Controllers
                 {
                     if (tipo_especial == "N")
                     {
-                        //totalPrecoUnitario = Convert.ToDouble(CalculaPrecoUnitario(taxa_juros, total_parcelas, Convert.ToDecimal(itemPedido.PrecoBase + itemPedido.ValorFrete))) - itemPedido.ValorFrete;
                         totalPrecoUnitario = Convert.ToDouble(CalculaPrecoUnitario(taxa_juros, total_parcelas, Convert.ToDecimal(itemPedido.PrecoBase)));
 
                     }
                     else
                         totalPrecoUnitario = precoUnitario;
 
-                    //totalLiquidoCalculado = Math.Round(totalPrecoUnitario, 2) * itemPedido.QuantidadePedido;
-                    //totalLiquidoCalculado = Math.Round(totalPrecoUnitario, 5, MidpointRounding.AwayFromZero) * Math.Round(itemPedido.QuantidadePedido, 5, MidpointRounding.AwayFromZero) + rateioFrete;
                     totalLiquidoCalculado = Math.Round(totalPrecoUnitario, 5, MidpointRounding.AwayFromZero) * itemPedido.QuantidadePedido;
 
                 }
-
-                if (itemPedido.ValorDescontoUsuario >= 0)
-                {
-                    var percentualDesconto = (itemPedido.ValorDescontoUsuario * 100) / totalLiquidoCalculado;
-                    itemPedido.PercentualDescontoUsuario = Math.Round(percentualDesconto, 2, MidpointRounding.AwayFromZero);
-                }
-
-                if (itemPedido.ValorAcrescimoUsuario >= 0)
-                {
-                    var percentualAcrescimo = Math.Round((itemPedido.ValorAcrescimoUsuario * 100) / totalLiquidoCalculado, 5, MidpointRounding.AwayFromZero);
-                    var aux = Math.Round(totalPrecoUnitario * percentualAcrescimo / 100, 2, MidpointRounding.AwayFromZero);
-                    itemPedido.PercentualAcrescimoUsuario = percentualAcrescimo;
-                }
-
-                //itemPedido.PrecoUnitario = Math.Round(totalPrecoUnitario, 2);
-                //itemPedido.ValorLiquido = Math.Round(totalLiquidoCalculado + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario, 2);
-                //itemPedido.ValorBruto = Math.Round(totalLiquidoCalculado, 2);
-                //itemPedido.ValorBase = itemPedido.QuantidadePedido * Math.Round(itemPedido.PrecoBase, 2);
+                
                 itemPedido.PrecoUnitario = Math.Round(totalPrecoUnitario + (rateioFrete / itemPedido.QuantidadePedido), 5, MidpointRounding.AwayFromZero);
-                //itemPedido.ValorLiquido = Math.Round((totalLiquidoCalculado + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario), 2, MidpointRounding.AwayFromZero);
-                //itemPedido.ValorLiquido = Math.Round(totalLiquidoCalculado, 2, MidpointRounding.AwayFromZero) + Math.Round(itemPedido.ValorAcrescimoUsuario, 2, MidpointRounding.AwayFromZero) - Math.Round(itemPedido.ValorDescontoUsuario, 2, MidpointRounding.AwayFromZero);
+                
+                double valorOferta = 0;
+                valorOferta = (totalLiquidoCalculado * itemPedido.PercentualOferta) / 100;
 
-                itemPedido.ValorLiquido = Math.Round((itemPedido.PrecoBase * itemPedido.QuantidadePedido) + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario, 5);
+                itemPedido.ValorLiquido = Math.Round((itemPedido.PrecoBase * itemPedido.QuantidadePedido) + itemPedido.ValorAcrescimoUsuario - itemPedido.ValorDescontoUsuario - valorOferta, 5);
 
                 itemPedido.ValorBruto = totalLiquidoCalculado;
                 itemPedido.ValorBase = itemPedido.QuantidadePedido * Math.Round(itemPedido.PrecoBase, 5, MidpointRounding.AwayFromZero);
@@ -2193,12 +2136,10 @@ namespace adminlte.Controllers
                 {
                     TaxaJurosCalculada += CalcularJuros((somaFrete), somaFrete, itemParcela.Percentual, tipo_especial, iniJur,
                         Convert.ToDateTime(itemParcela.DataVencimento), tipoCalculo, somaFrete.ToString(), taxa_juros);
-
                 }
 
                 vlrJurosFrete = Math.Round((somaFrete + TaxaJurosCalculada), 2) - somaFrete;
             }
-
             else
             {
                 vlrJurosFrete = Convert.ToDouble(CalculaPrecoUnitario(taxa_juros, total_parcelas, Convert.ToDecimal(somaFrete))) - somaFrete;
@@ -2210,6 +2151,7 @@ namespace adminlte.Controllers
         public ActionResult AlterarDataEntrega(string dataSelecionada)
         {
             var listItemPedido = TempData["listItemPedido"] as List<PedidoItem>;
+
             try
             {
                 DateTime dataEntrega = Convert.ToDateTime(dataSelecionada);
@@ -2298,77 +2240,6 @@ namespace adminlte.Controllers
             return dias;
         }
 
-        //private List<ConsultaProduto> ObterProdutoUnico(List<PedidoItem> listItemPedido, string tipo_especial, string taxa_juros,
-        //    string total_parcelas, string agComercial, string agEstoque, string codTabela,
-        //    string dataEmissao, string condPgto, string codCli, string transProd, string codRepresentante)
-        //{
-        //    var demaisItens = new
-        //    {
-        //        tipo_especial,
-        //        taxa_juros,
-        //        total_parcelas,
-        //        agComercial,
-        //        agEstoque,
-        //        codTabela,
-        //        dataEmissao,
-        //        condPgto,
-        //        codCli,
-        //        transProd,
-        //        codRepresentante
-        //    };
-        //    var sessaoProdutoUnico = Session["ObterProdutoUnico"] as List<ConsultaProduto>;
-        //    if (!demaisItens.Equals(Session["demaisItensComparacao"]) || !listItemPedido.Equals(Session["listItemPedidoComparacao"]) || (sessaoProdutoUnico == null || sessaoProdutoUnico.Count != listItemPedido.Count))
-        //    {
-        //        StringBuilder sql = new StringBuilder();
-        //        int codEmpFiltroPadrao = Convert.ToInt32(Session["empAti"]);
-        //        int codFilialFiltroPadrao = Convert.ToInt32(Session["filAti"]);
-
-        //        foreach (PedidoItem item in listItemPedido)
-        //        {
-        //            if (item.CodigoProduto == "")
-        //                throw new Exception("Não foi possível localizar o código de referência.");
-
-        //            sql.AppendFormat(@"DECLARE @VCodEmp INTEGER = {0},
-        //                                  @VCodFil INTEGER = {1},
-        //                                  @VCodCli INTEGER = {2},
-        //                                  @VCodCpg VARCHAR(6) = '{3}',
-        //                                  @VCodPro VARCHAR(14) = '{4}',
-        //                                  @VDesPro VARCHAR(100) = '{5}',
-        //                                  @VCodDer VARCHAR(7) = '{6}',
-        //                                  @VDatEmi VARCHAR(10) = '{7}',
-        //                                  @VTnsPro VARCHAR(6) = '{8}'
-        //                                SELECT *
-        //                                FROM dbo.fnBuscaProdutoV2(@VCodEmp,
-        //                                     @VCodFil,
-        //                                     @VCodCli,
-        //                                     @VCodCpg,
-        //                                     @VCodPro,
-        //                                     @VDesPro,
-        //                                     @VCodDer,
-        //                                     @VDatEmi,
-        //                                     @VTnsPro) UNION ",
-        //                    codEmpFiltroPadrao,
-        //                    codFilialFiltroPadrao,
-        //                    codCli,
-        //                    condPgto,
-        //                    item.CodigoProduto,
-        //                    item.DescricaoProduto,
-        //                    (String.IsNullOrEmpty(item.CodigoDerivacao) ? "" : item.CodigoDerivacao),
-        //                    dataEmissao,
-        //                    transProd
-        //                );
-        //        }
-        //        sql.Remove(sql.Length - 6, 6);
-
-        //        var resultado = UnidadeTrabalho.ExecuteSql<ConsultaProduto>(sql.ToString(), null).ToList();
-        //        Session["ObterProdutoUnico"] = resultado;
-        //        Session["demaisItensComparacao"] = demaisItens;
-        //        Session["listItemPedidoComparacao"] = listItemPedido;
-        //        sessaoProdutoUnico = Session["ObterProdutoUnico"] as List<ConsultaProduto>;
-        //    }
-        //    return sessaoProdutoUnico;
-        //}
-
         public ActionResult ObterProduto(string codPedido, string codProduto, string descProduto, string tipo_especial, string taxa_juros, string total_parcelas, string agComercial = null, string agEstoque = null, string codTabela = null, string dataEmissao = null, string condPgto = null, string codCli = null, string transProd = null, string codDerivacao = null, string codRepresentante = null, string qtdProduto = null, double vlrAcre = 0, double percAcre = 0, double vlrDesc = 0, double percDesc = 0)
         {
             int codEmpFiltroPadrao = Convert.ToInt32(Session["empAti"].ToString());
@@ -2376,7 +2247,6 @@ namespace adminlte.Controllers
 
             int codigoPedido = !string.IsNullOrEmpty(codPedido) ? Convert.ToInt32(codPedido) : 0;
 
-            //ConsultaProduto resultado = ObterProdutoUnico(codEmpFiltroPadrao, codFilialFiltroPadrao, codProduto, descProduto, dataEmissao, codCli, transProd, condPgto, codDerivacao);
             var resultado = PesquisarProduto(codEmpFiltroPadrao, codFilialFiltroPadrao, codProduto, descProduto, "MGMG");
 
             PedidoItem itemPedido = ConverteProdutoParaPedidoItem(resultado.FirstOrDefault(), tipo_especial, taxa_juros, total_parcelas, codEmpFiltroPadrao, codFilialFiltroPadrao, codDerivacao, Convert.ToDouble(qtdProduto), vlrAcre, percAcre, vlrDesc, percDesc);
@@ -2417,18 +2287,13 @@ namespace adminlte.Controllers
                 PedidoItem p = new PedidoItem();
 
                 p.CodigoProduto = (item.CodPro != null) ? item.CodPro : "";
-                //p.TemDerivacao = item.TemDer;
                 p.DescricaoProduto = (item.DesPro != null) ? item.DesPro : "";
                 p.UnidadeMedida = (item.UniMed != null) ? item.UniMed : "";
-                //p.CodigoAgrupamento = (!string.IsNullOrEmpty(item.Codage)) ? item.Codage : "";
-                //p.Agrupamento = (item.Desage != null) ? item.Desage : "";
                 p.PrecoBase = (item.PreBas > 0) ? Convert.ToDouble(item.PreBas) : 0;
                 p.PrecoUnitario = tipo_especial == "N" ? Convert.ToDouble(CalculaPrecoUnitario(taxa_juros, total_parcelas, item.PreBas)) : Convert.ToDouble(item.PreBas);
                 p.codTabela = (!string.IsNullOrEmpty(item.CodTpr)) ? item.CodTpr : "";
                 p.CodigoTRP = (!string.IsNullOrEmpty(item.CodTpr)) ? item.CodTpr : "";
                 p.DerivacaoSelecionada = item.CodDer;
-                //p.DepositoSelecionado = item.CodDep;
-                //p.CodigoDep = item.Coddep;
                 p.CodigoDerivacao = item.CodDer;
                 p.SalEst = Convert.ToDouble(item.SalEst);
                 p.DataEntrega = DateTime.Today.ToShortDateString();
@@ -2783,9 +2648,6 @@ namespace adminlte.Controllers
             trocarFilial.codUsu = codUsuarioLogado.ToString();
 
             GravarPedido.pedidosvendaTrocarFilialOut resultado = ws.TrocarFilial(usuarioLogado, senhaUsuLogado, 0, trocarFilial);
-
-            //GravarPedido.pedidosvendaGravarPedidoOut resultado = ws.GravarPedido(usuarioLogado, senhaUsuarioLogado, 0, pedidoIn);
-            //var respostaPedido = new GravarPedido.pedidosvendaGravarPedidoOut();
 
             if (!string.IsNullOrEmpty(resultado.erroExecucao))
             {

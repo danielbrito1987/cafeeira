@@ -63,6 +63,8 @@ namespace PonteAlta.Models
         public virtual double ValorBruto { get; set; }
 
         public virtual double ValorDesconto { get; set; }
+        
+        public virtual double PercentualDesconto { get; set; }
 
         public virtual double ValorAcrescimo { get; set; }
 

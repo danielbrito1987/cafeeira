@@ -19,11 +19,11 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?wsdl" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda.xsd" MetadataType="Schema" ID="4f5a7e1a-40e7-4e39-aef1-85284a09820a" SourceId="1" SourceUrl="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?xsd=1" />
-    <MetadataFile FileName="g5-senior-services.wsdl" MetadataType="Wsdl" ID="16cd6563-77d0-4ec7-b6d5-f87282102498" SourceId="1" SourceUrl="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?wsdl" />
+    <MetadataFile FileName="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda.xsd" MetadataType="Schema" ID="0d82b1c0-e372-432c-a340-485e08e6f261" SourceId="1" SourceUrl="http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?xsd=1" />
+    <MetadataFile FileName="g5-senior-services.wsdl" MetadataType="Wsdl" ID="3d6d786f-19c4-44c6-9d06-e1f8b780b24f" SourceId="1" SourceUrl="http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?wsdl" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

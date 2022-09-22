@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="AjdGoU5214rxB1rO9AaD2V1d2Mg=">
+<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="6lAL8DnjRQsblPPm7vMh8sjvxEk=">
   <bindingConfigurations>
     <bindingConfiguration bindingType="basicHttpBinding" name="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPortBinding">
       <properties>
@@ -112,10 +112,10 @@
     </bindingConfiguration>
   </bindingConfigurations>
   <endpoints>
-    <endpoint name="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPort" contract="GravarPedido.sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda" bindingType="basicHttpBinding" address="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda" bindingConfiguration="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPortBinding">
+    <endpoint name="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPort" contract="GravarPedido.sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda" bindingType="basicHttpBinding" address="http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda" bindingConfiguration="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPortBinding">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda</serializedValue>
+          <serializedValue>http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda</serializedValue>
         </property>
         <property path="/behaviorConfiguration" isComplexType="false" isExplicitlyDefined="false" clrType="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue />

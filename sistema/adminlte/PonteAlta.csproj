@@ -237,6 +237,7 @@
     </Content>
     <None Include="Connected Services\GravarPedido\configuration91.svcinfo" />
     <None Include="Connected Services\GravarPedido\configuration.svcinfo" />
+    <None Include="Connected Services\GravarPedido\g5-senior-services.wsdl" />
     <None Include="Connected Services\GravarPedido\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -262,7 +263,6 @@
     <Content Include="Connected Services\WS_Usuario\adminlte.WS_Usuario.mcwfUsersUserReplicationOut.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Content>
-    <None Include="Connected Services\GravarPedido\g5-senior-services.wsdl" />
     <None Include="Connected Services\GravarPedido\sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -4523,6 +4523,8 @@
     <Content Include="Scripts\jquery.globalize\cultures\globalize.culture.zu.js" />
     <Content Include="Scripts\jquery.globalize\cultures\globalize.cultures.js" />
     <Content Include="Scripts\jquery.globalize\globalize.js" />
+    <Content Include="Scripts\jquery.mask.js" />
+    <Content Include="Scripts\jquery.mask.min.js" />
     <Content Include="Scripts\Pedido\ConsultaProduto\ConsultaProduto.js" />
     <Content Include="Scripts\Pedido\Pedido\pedido.js" />
     <Content Include="Scripts\Pedido\Pedido\relatorio.js" />

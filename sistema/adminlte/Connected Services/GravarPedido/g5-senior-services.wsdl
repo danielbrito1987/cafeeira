@@ -2,9 +2,18 @@
 <definitions xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:tns="http://services.senior.com.br" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" name="g5-senior-services" targetNamespace="http://services.senior.com.br" xmlns="http://schemas.xmlsoap.org/wsdl/">
   <types>
     <xsd:schema>
-      <xsd:import schemaLocation="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?xsd=1" namespace="http://services.senior.com.br" />
+      <xsd:import schemaLocation="http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda?xsd=1" namespace="http://services.senior.com.br" />
     </xsd:schema>
   </types>
+  <message name="TrocarFilial">
+    <part name="user" type="xsd:string" />
+    <part name="password" type="xsd:string" />
+    <part name="encryption" type="xsd:int" />
+    <part name="parameters" type="tns:pedidosvendaTrocarFilialIn" />
+  </message>
+  <message name="TrocarFilialResponse">
+    <part name="result" type="tns:pedidosvendaTrocarFilialOut" />
+  </message>
   <message name="GravarPedido">
     <part name="user" type="xsd:string" />
     <part name="password" type="xsd:string" />
@@ -23,16 +32,11 @@
   <message name="RelatoriosResponse">
     <part name="result" type="tns:pedidosvendaRelatoriosOut" />
   </message>
-  <message name="TrocarFilial">
-    <part name="user" type="xsd:string" />
-    <part name="password" type="xsd:string" />
-    <part name="encryption" type="xsd:int" />
-    <part name="parameters" type="tns:pedidosvendaTrocarFilialIn" />
-  </message>
-  <message name="TrocarFilialResponse">
-    <part name="result" type="tns:pedidosvendaTrocarFilialOut" />
-  </message>
   <portType name="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda">
+    <operation name="TrocarFilial" parameterOrder="user password encryption parameters">
+      <input wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/TrocarFilialRequest" message="tns:TrocarFilial" />
+      <output wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/TrocarFilialResponse" message="tns:TrocarFilialResponse" />
+    </operation>
     <operation name="GravarPedido" parameterOrder="user password encryption parameters">
       <input wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/GravarPedidoRequest" message="tns:GravarPedido" />
       <output wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/GravarPedidoResponse" message="tns:GravarPedidoResponse" />
@@ -41,13 +45,18 @@
       <input wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/RelatoriosRequest" message="tns:Relatorios" />
       <output wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/RelatoriosResponse" message="tns:RelatoriosResponse" />
     </operation>
-    <operation name="TrocarFilial" parameterOrder="user password encryption parameters">
-      <input wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/TrocarFilialRequest" message="tns:TrocarFilial" />
-      <output wsam:Action="http://services.senior.com.br/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda/TrocarFilialResponse" message="tns:TrocarFilialResponse" />
-    </operation>
   </portType>
   <binding name="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPortBinding" type="tns:sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+    <operation name="TrocarFilial">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" namespace="http://services.senior.com.br" />
+      </input>
+      <output>
+        <soap:body use="literal" namespace="http://services.senior.com.br" />
+      </output>
+    </operation>
     <operation name="GravarPedido">
       <soap:operation soapAction="" />
       <input>
@@ -66,19 +75,10 @@
         <soap:body use="literal" namespace="http://services.senior.com.br" />
       </output>
     </operation>
-    <operation name="TrocarFilial">
-      <soap:operation soapAction="" />
-      <input>
-        <soap:body use="literal" namespace="http://services.senior.com.br" />
-      </input>
-      <output>
-        <soap:body use="literal" namespace="http://services.senior.com.br" />
-      </output>
-    </operation>
   </binding>
   <service name="g5-senior-services">
     <port name="sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPort" binding="tns:sapiens_Synccom_senior_g5_co_cafeeira_pedidosvendaPortBinding">
-      <soap:address location="http://186.249.249.160:9490/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda" />
+      <soap:address location="http://srv-senior:8080/g5-senior-services/sapiens_Synccom_senior_g5_co_cafeeira_pedidosvenda" />
     </port>
   </service>
 </definitions>

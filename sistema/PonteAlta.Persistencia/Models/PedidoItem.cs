@@ -41,6 +41,8 @@ namespace PonteAlta.Persistencia.Models
         public virtual double PercentualAcrescimoUsuario { get; set; }
 
         public virtual double ValorAcrescimoUsuario { get; set; }
+        
+        public virtual double PercentualOferta { get; set; }
 
         public virtual double PrecoUnitario { get; set; }
 

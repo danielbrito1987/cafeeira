@@ -6,6 +6,9 @@ Sistema.Pedido = {
 
         if (!$('#txtDataPedido').val())
             $('#txtDataPedido').val(hoje.toLocaleDateString('pt-BR'));
+
+        $("#txtVlrArredondamento").mask("#.##0,000", { reverse: true });
+        $("#txtVlrDesconto").mask("#.##0,000", { reverse: true });
     },
 
     Load: function (visible) {
@@ -865,7 +868,11 @@ Sistema.Pedido = {
 
                 $('#txtCodProduto').val(data.Data.CodigoProduto);
                 $('#cbDerivacao').val(data.Data.CodigoDerivacao);
-                $('#cbDeposito').val(data.Data.CodigoDep);
+
+                if (data.Data.ListaDepositos.length == 1) {
+                    $('#cbDeposito').val(data.Data.ListaDepositos[0].Deposito);
+                }
+
                 $('#txtDescProd').val(data.Data.DescricaoProduto);
                 $('#txtTabelaPreco').val(data.Data.CodigoTRP);
                 $('#txtPrecoBase').val(data.Data.PrecoBase.toFixed(3));
@@ -947,13 +954,22 @@ Sistema.Pedido = {
                         $('#cbDerivacao').append("<option value='" + value.Codigo + "'>" + value.Nome + "</option>");
                     });
 
-                    $.each(data.Data.ListaDepositos, function (index, value) {
-                        $('#cbDeposito').append("<option value='" + value.Deposito + "'>" + value.Deposito + "</option>");
-                    });
+                    if (data.Data.ListaDepositos.length == 1) {
+                        $.each(data.Data.ListaDepositos, function (index, value) {
+                            $('#cbDeposito').append("<option selected='selected' value='" + value.Deposito + "'>" + value.Deposito + "</option>");
+                        });
+                    } else {
+                        $.each(data.Data.ListaDepositos, function (index, value) {
+                            $('#cbDeposito').append("<option value='" + value.Deposito + "'>" + value.Deposito + "</option>");
+                        });
+                    }
 
                     $('#txtCodProduto').val(data.Data.CodigoProduto);
                     $('#cbDerivacao').val(data.Data.CodigoDerivacao);
-                    $('#cbDeposito').val(data.Data.CodigoDep);
+
+                    if (data.Data.ListaDepositos.length == 1) {
+                        $('#cbDeposito').val(data.Data.ListaDepositos[0].Deposito);
+                    }
 
                     //$('#cbDeposito option').filter(function () {
                     //    return this.value == data.Data.CodigoDep;
@@ -1204,6 +1220,7 @@ Sistema.Pedido = {
                     //ValidarAba();
 
                     $('#lblVlrLiquido').val(SapiensJS.Util.formatReal(result.ValorLiquido));
+                    $('#txtVlrDesconto').val(result.PercentualDesconto.toString().replace('.', ','));
                     //lblQtdSacas.SetText(result.QtdSaca);
                     $('#lblVlrFrete').val(result.ValorFrete);
                     //text_valor_total_cpr.value = result.QtdSaca;
@@ -1324,6 +1341,8 @@ Sistema.Pedido = {
         $('#btnCodCondPgto').prop("disabled", true);
         $('#btnCodVeiculo').prop("disabled", true);
         $('#btnAddItem').prop("disabled", true);
+        $('#btnRemoveArescimo').prop("disabled", true);
+        $('#btnRemoveDesconto').prop("disabled", true);
 
         $('#txtVlrArredondamento').prop("disabled", true);
         $('#txtVlrDesconto').prop("disabled", true);
@@ -1361,6 +1380,8 @@ Sistema.Pedido = {
         $('#btnCodCondPgto').prop("disabled", false);
         $('#btnCodVeiculo').prop("disabled", false);
         $('#btnAddItem').prop("disabled", false);
+        $('#btnRemoveArescimo').prop("disabled", false);
+        $('#btnRemoveDesconto').prop("disabled", false);
 
         $('#txtVlrArredondamento').prop("disabled", false);
         $('#txtVlrDesconto').prop("disabled", false);
@@ -2211,16 +2232,23 @@ Sistema.Pedido = {
     },
 
     RemoverDesconto: function () {
-        $('#txtVlrDesconto').val("0,00");
-        Sistema.Pedido.RecalcularItensPedido(true, true);
+        $('#txtVlrDesconto').val(0);
+
+        $.ajax({
+            url: '/Pedido/RemoverOferta',
+            async: false,
+            success: function (result) {
+                Sistema.Pedido.RecalcularItensPedido(true, true);
+            }
+        });
     },
 
     RemoverAcrescimo: function () {
-        $('#txtVlrArredondamento').val("0,00");
-        Sistema.Pedido.RecalcularItensPedido(true, true);
+        $('#txtVlrArredondamento').val(0);
+        Sistema.Pedido.RecalcularItensPedido(true, true, true);
     },
 
-    RecalcularItensPedido: function (validaDesconto, updatePedido) {
+    RecalcularItensPedido: function (validaDesconto, updatePedido, removerAcrescimo) {
         var condicaoEspecial = $('#condicao_pagamento_Especial').val();
         var condicaoPgtoTipoCalculo = $('#condicao_pagamento_tipo_calculo').val();
         var taxaJuros = $('#condicao_pagamento_taxa_juros').val();
@@ -2267,7 +2295,7 @@ Sistema.Pedido = {
         var dataIniJur = $('#condicao_pagamento_ini_jur').val() != "" ? $('#condicao_pagamento_ini_jur').val() : dataEmissao;
         var codDerivacao = null;
         var codRep = $('#txtCodRepresentante').val();
-        var vlrLiquido = $('#text_valor_total_liquido').val().replace(',', '.');
+        var vlrLiquido = $('#lblVlrLiquido').val().replace(',', '.');
 
         $.ajax({
             url: '/Pedido/RecalculaItens',
@@ -2289,7 +2317,8 @@ Sistema.Pedido = {
                 'codRepresentante': codRep,
                 'vlrDescontoTotal': desconto,
                 'vlrArredondamento': arredondamento,
-                'vlrLiquido': vlrLiquido
+                'vlrLiquido': vlrLiquido,
+                'removerAcrescimo': removerAcrescimo
             },
             success: function (result) {
                 if (result.Data != undefined && result.Data.Error != undefined && result.Data.Error == true) {
@@ -2607,7 +2636,7 @@ Sistema.Pedido = {
 
                     if (sumPercentual == 100) {
                         $('#lblparcvalida').val('Sim');
-                        Sistema.Pedido.RecalcularItensPedido(false);
+                        //Sistema.Pedido.RecalcularItensPedido(false, false, true);
                         AjustarParcela();
                     } else {
                         $('#lblparcvalida').val('Não');
@@ -2698,7 +2727,7 @@ Sistema.Pedido = {
 
                     if (sumPercentual == 100) {
                         $('#lblparcvalida').val('Sim');
-                        Sistema.Pedido.RecalcularItensPedido(false);
+                        //Sistema.Pedido.RecalcularItensPedido(false, false, true);
                         AjustarParcela();
                     } else {
                         $('#lblparcvalida').val('Não');
@@ -3125,7 +3154,7 @@ function CalcularTotais(updatePedido) {
     if (liquido_produtos > 0)
         total_liquido = (total_liquido * 1) + (liquido_produtos * 1);
 
-    var preco_bruto = (liquido_produtos * 1) - (total_acrescimo * 1) + (total_desconto * 1);
+    var preco_bruto = (liquido_produtos * 1) + (total_acrescimo * 1) - (total_desconto * 1);
 
     $('#lblVlrLiquido').val(SapiensJS.Util.formatReal(total_liquido.toFixed(2)));
     $('#text_valor_total_liquido').val(total_liquido.toFixed(2));

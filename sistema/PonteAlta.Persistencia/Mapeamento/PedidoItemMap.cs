@@ -33,6 +33,7 @@ namespace PonteAlta.Persistencia.Mapeamento
             Map(g => g.ValorDescontoUsuario, "USU_VLRDSC").Nullable();
             Map(g => g.PercentualAcrescimoUsuario, "USU_PERACR").Nullable();
             Map(g => g.ValorAcrescimoUsuario, "USU_VLRACR").Nullable();
+            Map(g => g.PercentualOferta, "PEROFE");
             Map(g => g.PrecoUnitario, "PREUNI").Nullable();
             Map(g => g.ValorBruto, "VLRBRU").Nullable();
             Map(g => g.ValorLiquido, "VLRLIQ").Nullable();
