@@ -299,9 +299,18 @@ namespace adminlte.Controllers
 
                 var item = UnidadeTrabalho.ObterTodos<PedidoItem>().Where(x => x.Empresa == codEmpFiltroPadrao && x.Filial == codFilialFiltroPadrao && x.Pedido.Codigo == l.Codigo).OrderBy(x => x.Sequencia);
 
+                double vlrAcrescimo = 0;
+
+                foreach (var prod in item)
+                {
+                    vlrAcrescimo += prod.ValorAcrescimoUsuario;
+                }
+
                 if (item != null && item.Count() > 0)
                 {
                     l.PercentualDesconto = item.FirstOrDefault().PercentualOferta;
+                    l.ValorAcrescimo = vlrAcrescimo;
+                    l.AcrFin = vlrAcrescimo;
                 }
 
                 var resultadoPedido = new
@@ -1107,33 +1116,43 @@ namespace adminlte.Controllers
 
         public ActionResult AjustaParcelas(double valorLiquidoPedido, double valorTotalParcelas, double percentualTotalParcelas)
         {
-            TempData.Keep();
-            var listaParcela = TempData["listaParcela"] as List<Parcela>;
-
-            if (valorTotalParcelas != valorLiquidoPedido && valorTotalParcelas != 0 && valorLiquidoPedido != 0)
+            try
             {
-                double diferenca = 0;
+                TempData.Keep();
+                var listaParcela = TempData["listaParcela"] as List<Parcela>;
 
-                if (valorLiquidoPedido > valorTotalParcelas)
-                    diferenca = valorLiquidoPedido - valorTotalParcelas;
-                else
-                    diferenca = valorTotalParcelas - valorLiquidoPedido;
-
-                foreach (var item in listaParcela)
+                if (valorTotalParcelas != valorLiquidoPedido && valorTotalParcelas != 0 && valorLiquidoPedido != 0)
                 {
-                    if (item.SequenciaParcela == (listaParcela.Count))
+                    double diferenca = 0;
+
+                    if (valorLiquidoPedido > valorTotalParcelas)
+                        diferenca = valorLiquidoPedido - valorTotalParcelas;
+                    else
+                        diferenca = valorTotalParcelas - valorLiquidoPedido;
+
+                    foreach (var item in listaParcela)
                     {
-                        if(valorLiquidoPedido < valorTotalParcelas)
-                            item.ValorParcela = item.ValorParcela - diferenca;
-                        else
-                            item.ValorParcela = item.ValorParcela + diferenca;
+                        if (item.SequenciaParcela == (listaParcela.Count))
+                        {
+                            if (valorLiquidoPedido < valorTotalParcelas)
+                                item.ValorParcela = item.ValorParcela - diferenca;
+                            else
+                                item.ValorParcela = item.ValorParcela + diferenca;
+                        }
                     }
                 }
+
+                TempData["listaParcela"] = listaParcela;
+
+                return Json(listaParcela);
+            }catch(Exception e)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Mesage = e.Message
+                });
             }
-
-            TempData["listaParcela"] = listaParcela;
-
-            return Json(listaParcela);
         }
 
         public ActionResult CalcularParcela(string valorLiquido, string dataVencimento)
@@ -1634,7 +1653,7 @@ namespace adminlte.Controllers
             pedidoNovo.vlrFre = PreparaValor(pedido.ValorFrete.ToString());
             pedidoNovo.vlrLiq = PreparaValor(pedido.ValorLiquido.ToString());
             pedidoNovo.USU_TxaJur = !string.IsNullOrEmpty(pedido.TaxaJuros.ToString()) ? pedido.TaxaJuros.ToString() : "0";
-            pedidoNovo.USU_AcrFin = !string.IsNullOrEmpty(pedido.AcrFin.ToString()) ? pedido.AcrFin.ToString() : "0";
+            pedidoNovo.USU_AcrFin = "0";
 
             pedidoNovo.codUsu = codUsuarioLogado.ToString();
             //preparando parcelas
@@ -1733,12 +1752,12 @@ namespace adminlte.Controllers
             //Trecho de código responsável por calcular diferença entre total do pedido e total de parcelas
             double diff = 0;
             valorParcelas = listaPostParcelas.Sum(x => Math.Round(x.ValorParcela, 3, MidpointRounding.AwayFromZero));
-            totalLiquidoPedido = Math.Round(totalLiquidoPedido, 2);
+            //totalLiquidoPedido = Math.Round(totalLiquidoPedido, 2);
 
-            if (totalLiquidoPedido > valorParcelas)
-                diff = totalLiquidoPedido - valorParcelas;
+            if (pedido.ValorLiquido > valorParcelas)
+                diff = pedido.ValorLiquido - valorParcelas;
             else
-                diff = valorParcelas - totalLiquidoPedido;
+                diff = valorParcelas - pedido.ValorLiquido;
 
             diff = Math.Round(diff, 2);
 
@@ -1749,7 +1768,7 @@ namespace adminlte.Controllers
                 {
                     if (item.SequenciaParcela == (listaPostParcelas.Count))
                     {
-                        if (totalLiquidoPedido < valorParcelas)
+                        if (pedido.ValorLiquido < valorParcelas)
                             item.ValorParcela = item.ValorParcela - diff;
                         else
                             item.ValorParcela = item.ValorParcela + diff;

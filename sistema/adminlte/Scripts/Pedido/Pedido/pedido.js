@@ -761,7 +761,7 @@ Sistema.Pedido = {
                     if (carregandoPedido != true) {
                         Sistema.Pedido.CalcularParcela();
                         //RecalcularTodasParcelas();
-                        Sistema.Pedido.RecalcularItensPedido(false);
+                        Sistema.Pedido.RecalcularItensPedido(false, true, true);
                     } else {
                         $('#btnAddParcela').prop("disabled", false);
 
@@ -1220,6 +1220,7 @@ Sistema.Pedido = {
                     //ValidarAba();
 
                     $('#lblVlrLiquido').val(SapiensJS.Util.formatReal(result.ValorLiquido));
+                    $('#txtVlrArredondamento').val(SapiensJS.Util.formatReal(result.ValorAcrescimo));
                     $('#txtVlrDesconto').val(result.PercentualDesconto.toString().replace('.', ','));
                     //lblQtdSacas.SetText(result.QtdSaca);
                     $('#lblVlrFrete').val(result.ValorFrete);
@@ -2295,7 +2296,7 @@ Sistema.Pedido = {
         var dataIniJur = $('#condicao_pagamento_ini_jur').val() != "" ? $('#condicao_pagamento_ini_jur').val() : dataEmissao;
         var codDerivacao = null;
         var codRep = $('#txtCodRepresentante').val();
-        var vlrLiquido = $('#lblVlrLiquido').val().replace(',', '.');
+        var vlrLiquido = $('#lblVlrLiquido').val().replace('.', '').replace(',', '.');
 
         $.ajax({
             url: '/Pedido/RecalculaItens',
@@ -2677,7 +2678,7 @@ Sistema.Pedido = {
         parcela.Codigo = $('#codigo_parcela').val();
         parcela.SequenciaParcela = $('#sequencia_parcela').val();
         parcela.Percentual = parseFloat($('#txtPercentual').val().replace(',', '.')).toFixed(3);
-        parcela.ValorParcela = parseFloat($('#txtValorParcela').val().replace(',', '.')).toFixed(3);
+        parcela.ValorParcela = parseFloat($('#txtValorParcela').val().replace('.', '').replace(',', '.')).toFixed(3);
 
         var dataVcto = $('#DataVencimento').val().split('-');
 
@@ -3233,7 +3234,7 @@ function RecalcularTodasParcelas(updatePedido) {
 }
 
 function AjustarParcela() {
-    var valorLiquidoPedido = $('#lblVlrLiquido').val().replace(',', '.');
+    var valorLiquidoPedido = $('#lblVlrLiquido').val().replace('.', '').replace(',', '.');
     var valorTotalParcelas = 0.00;
     var percentualTotalParcelas = 0.00;
 
@@ -3250,6 +3251,9 @@ function AjustarParcela() {
                 Swal.fire("Erro", response.Message, "error");
             else
                 Sistema.Pedido.GridParcelas(response.Data);
+        },
+        error: function (err) {
+            console.log(err);
         }
     });
 }
@@ -3269,8 +3273,8 @@ function CalcularValorParcela() {
     if ($('#txtPercentual').val() != null && $('#txtPercentual').val() != "") {
         //var valorLiquido = SapiensJS.Util.converteMoedaFloat($('#lblVlrLiquido').val());
         //var percentual = SapiensJS.Util.converteMoedaFloat($('#txtPercentual').val());
-        var valorLiquido = $('#lblVlrLiquido').val().replace(',', '.');
-        var percentual = $('#txtPercentual').val().replace(',', '.');
+        var valorLiquido = $('#lblVlrLiquido').val().replace('.', '').replace(',', '.');
+        var percentual = $('#txtPercentual').val().replace('.', '').replace(',', '.');
 
         var valorParcela = (valorLiquido * percentual) / 100;
 
@@ -3283,8 +3287,8 @@ function CalcularPercentualParcela() {
     if ($('#txtValorParcela').val() != null && $('#txtValorParcela').val() != "") {
         //var valorLiquido = SapiensJS.Util.converteMoedaFloat($('#lblVlrLiquido').val());
         //var valorParcela = SapiensJS.Util.converteMoedaFloat($('#txtValorParcela').val());
-        var valorLiquido = $('#lblVlrLiquido').val().replace(',', '.');
-        var valorParcela = $('#txtValorParcela').val().replace(',', '.');
+        var valorLiquido = $('#lblVlrLiquido').val().replace('.', '').replace(',', '.');
+        var valorParcela = $('#txtValorParcela').val().replace('.', '').replace(',', '.');
 
         var percentual = (valorParcela / valorLiquido) * 100;
 
